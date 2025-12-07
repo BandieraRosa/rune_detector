@@ -335,6 +335,29 @@ class ContourWrapper
     }
     return GetConvexHullImpl(contours);
   }
+
+ public:
+  using const_iterator =
+      typename std::vector<cv::Point_<T>>::const_iterator;  // 常量迭代器
+  using const_reverse_iterator =
+      typename std::vector<cv::Point_<T>>::const_reverse_iterator;  // 常量反向迭代器
+
+  const_iterator begin() const noexcept { return points_.begin(); }
+  const_iterator end() const noexcept { return points_.end(); }
+  const_iterator cbegin() const noexcept { return points_.cbegin(); }
+  const_iterator cend() const noexcept { return points_.cend(); }
+  const_reverse_iterator rbegin() const noexcept { return points_.rbegin(); }
+  const_reverse_iterator rend() const noexcept { return points_.rend(); }
+  const_reverse_iterator crbegin() const noexcept { return points_.crbegin(); }
+  const_reverse_iterator crend() const noexcept { return points_.crend(); }
+
+  // 常用stl接口
+  size_t size() const noexcept { return points_.size(); }
+  bool empty() const noexcept { return points_.empty(); }
+  const cv::Point_<T>& operator[](size_t idx) const noexcept { return points_[idx]; }
+  const cv::Point_<T>& at(size_t idx) const { return points_.at(idx); }
+  const cv::Point_<T>& front() const noexcept { return points_.front(); }
+  const cv::Point_<T>& back() const noexcept { return points_.back(); }
 };
 
 }  // namespace rune_detector
