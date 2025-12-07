@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <rclcpp/logging.hpp>
@@ -630,8 +631,6 @@ ContourWrapper<T, ThreadSafe>::crend() const noexcept
 {
   return points_.crend();
 }
-
-// ==================== ContourWrapper STL 接口实现 ====================
 
 template <ContourBaseType T, bool ThreadSafe>
 size_t ContourWrapper<T, ThreadSafe>::size() const noexcept

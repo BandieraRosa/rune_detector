@@ -1,3 +1,6 @@
+#pragma once
+
+#include <atomic>
 #include <concepts>
 #include <functional>
 #include <mutex>
@@ -35,9 +38,16 @@ class LazyCache
   {
     if constexpr (ThreadSafe)
     {
-      std::call_once(
-          flag_, [this, &generator]
-          { value_.emplace(std::invoke(std::forward<Generator>(generator))); });
+      // Double-checked locking pattern
+      if (!initialized_.load(std::memory_order_acquire))
+      {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!initialized_.load(std::memory_order_relaxed))
+        {
+          value_.emplace(std::invoke(std::forward<Generator>(generator)));
+          initialized_.store(true, std::memory_order_release);
+        }
+      }
     }
     else
     {
@@ -52,22 +62,38 @@ class LazyCache
   /**
    * @brief 检查是否已缓存值
    */
-  [[nodiscard]] bool HasValue() const noexcept { return value_.has_value(); }
+  [[nodiscard]] bool HasValue() const noexcept
+  {
+    if constexpr (ThreadSafe)
+    {
+      return initialized_.load(std::memory_order_acquire);
+    }
+    else
+    {
+      return value_.has_value();
+    }
+  }
 
   /**
    * @brief 清除缓存值
+   * @note 线程安全模式下，此操作与 Get() 并发调用是安全的
    */
   void Reset() noexcept
   {
-    value_.reset();
     if constexpr (ThreadSafe)
     {
-      flag_.~once_flag();
-      new (&flag_) std::once_flag{};
+      std::lock_guard<std::mutex> lock(mutex_);
+      value_.reset();
+      initialized_.store(false, std::memory_order_release);
+    }
+    else
+    {
+      value_.reset();
     }
   }
 
  private:
   mutable std::optional<T> value_;
-  mutable std::once_flag flag_;  // 仅 ThreadSafe 使用
+  mutable std::conditional_t<ThreadSafe, std::mutex, char> mutex_{};
+  mutable std::conditional_t<ThreadSafe, std::atomic<bool>, char> initialized_{};
 };
