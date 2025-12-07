@@ -1,13 +1,14 @@
+#include <concepts>
+#include <functional>
+#include <mutex>
+#include <optional>
+
 /**
  * @brief 线程安全的延迟求值缓存
  *
  * @tparam T          缓存值类型
  * @tparam ThreadSafe 是否线程安全
  */
-#include <concepts>
-#include <functional>
-#include <mutex>
-#include <optional>
 template <typename T, bool ThreadSafe = false>
 class LazyCache
 {
