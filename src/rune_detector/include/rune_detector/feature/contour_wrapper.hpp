@@ -39,7 +39,7 @@ class ContourWrapper
    *
    * @param contour 轮廓点集
    */
-  inline static std::shared_ptr<ContourWrapper<int>> make_contour(
+  inline static std::shared_ptr<ContourWrapper<int>> MakeContour(
       const std::vector<cv::Point_<int>>& contour);
 
   /**
@@ -47,68 +47,68 @@ class ContourWrapper
    *
    * @param contour 轮廓点集
    */
-  inline static std::shared_ptr<ContourWrapper<int>> make_contour(
+  inline static std::shared_ptr<ContourWrapper<int>> MakeContour(
       std::vector<cv::Point_<int>>&& contour);
 
   /**
    * @brief 获取轮廓点集
    */
-  const std::vector<cv::Point_<int>>& points() const;
+  const std::vector<cv::Point_<int>>& Points() const;
 
   /**
    * @brief 获取轮廓面积
    */
-  double area() const;
+  double Area() const;
 
   /**
    * @brief 获取轮廓周长
    */
-  double perimeter(bool close = true) const;
+  double Perimeter(bool close = true) const;
 
   /**
    * @brief 获取轮廓中心点
    */
-  cv::Point_<float> center() const;
+  cv::Point_<float> Center() const;
 
   /**
    * @brief 获取轮廓的正外接矩形
    */
-  cv::Rect boundingRect() const;
+  cv::Rect BoundingRect() const;
 
   /**
    * @brief 获取轮廓的最小外接矩形
    */
-  cv::RotatedRect minAreaRect() const;
+  cv::RotatedRect MinAreaRect() const;
 
   /**
    * @brief 获取轮廓的拟合圆
    */
-  std::tuple<cv::Point2f, float> fittedCircle() const;
+  std::tuple<cv::Point2f, float> FittedCircle() const;
 
   /**
    * @brief 获取轮廓的拟合椭圆
    */
-  cv::RotatedRect fittedEllipse() const;
+  cv::RotatedRect FittedEllipse() const;
 
   /**
    * @brief 获取轮廓的凸包
    */
-  const std::vector<cv::Point_<int>>& convexHull() const;
+  const std::vector<cv::Point_<int>>& ConvexHull() const;
 
   /**
    * @brief 获取凸包的索引
    */
-  const std::vector<int>& convexHullIdx() const;
+  const std::vector<int>& ConvexHullIdx() const;
 
   /**
    * @brief 获取凸包的面积
    */
-  float convexArea() const;
+  float ConvexArea() const;
 
   /**
    * @brief 生成信息字符串
    */
-  std::string infoString() const;
+  std::string InfoString() const;
 
   /**
    * @brief 隐式转换
@@ -118,12 +118,12 @@ class ContourWrapper
   /**
    * @brief 获取轮廓的凸包轮廓——接口
    */
-  static std::shared_ptr<ContourWrapper<int>> getConvexHull(
+  static std::shared_ptr<ContourWrapper<int>> GetConvexHull(
       const std::vector<std::shared_ptr<const ContourWrapper<int>>>& contours);
 
  private:
   // 标志位缓存
-  mutable std::bitset<16> cache_flags;
+  mutable std::bitset<16> cache_flags_;
 
   //----------------【直接存储】---------------------
   std::vector<cv::Point_<int>> __points;
