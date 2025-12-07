@@ -1,3 +1,12 @@
+/**
+ * @file contour_wrapper.hpp
+ * @author 张峰玮 (3480409161@qq.com)
+ * @brief 轮廓分析器头文件
+ * @date 2025-4-12
+
+ * @author BandieraRosa (3132716198@qq.com)
+ * @note
+ */
 #pragma once
 
 #include <memory>
@@ -87,7 +96,7 @@ class ContourWrapper
    * @brief 移动构造函数
    * @param contour 轮廓点集
    */
-  ContourWrapper(PointVec&& contour) noexcept(false);
+  ContourWrapper(PointVec&& contour) noexcept;
 
   // 禁用拷贝构造函数
   ContourWrapper(const ContourWrapper&) = delete;
@@ -179,7 +188,7 @@ class ContourWrapper
   /**
    * @brief 获取凸包的面积
    */
-  [[nodiscard]] float ConvexArea() const noexcept;
+  [[nodiscard]] double ConvexArea() const noexcept;
 
   /**
    * @brief 生成信息字符串
@@ -379,7 +388,7 @@ ContourWrapper<T, ThreadSafe>::ContourWrapper(const PointVec& contour) : points_
 }
 
 template <ContourBaseType T, bool ThreadSafe>
-ContourWrapper<T, ThreadSafe>::ContourWrapper(PointVec&& contour) noexcept(false)
+ContourWrapper<T, ThreadSafe>::ContourWrapper(PointVec&& contour) noexcept
     : points_(std::move(contour))
 {
 }
@@ -403,7 +412,7 @@ template <std::input_iterator It>
 [[nodiscard]] auto ContourWrapper<T, ThreadSafe>::MakeContour(It first, It last)
     -> ContourPtr
 {
-  return std::make_shared<ContourWrapper>(first, last);
+  return std::make_shared<ContourWrapper>(PointVec(first, last));
 }
 
 template <ContourBaseType T, bool ThreadSafe>
@@ -419,8 +428,7 @@ auto ContourWrapper<T, ThreadSafe>::GetConvexHullImpl(
   all_points.reserve(total_point_size);
   for (const auto& contour : contours)
   {
-    const auto& points = contour->Points();
-    all_points.insert(all_points.end(), points.begin(), points.end());
+    std::ranges::copy(contour->Points(), std::back_inserter(all_points));
   }
   PointVec convex_hull;
   cv::convexHull(all_points, convex_hull);
@@ -545,7 +553,7 @@ template <ContourBaseType T, bool ThreadSafe>
 }
 
 template <ContourBaseType T, bool ThreadSafe>
-float ContourWrapper<T, ThreadSafe>::ConvexArea() const noexcept
+double ContourWrapper<T, ThreadSafe>::ConvexArea() const noexcept
 {
   return convex_area_.Get([this] { return std::abs(cv::contourArea(ConvexHull())); });
 }
@@ -672,7 +680,7 @@ template <ContourBaseType OutputType, ContourWrapperPtrType ContourPtrT>
 [[nodiscard]] inline auto convert(const ContourPtrT& contour)
     -> std::shared_ptr<ContourWrapper<OutputType>>
 {
-  using InputType = typename ContourPtrT::element_type::value_type;
+  using InputType = typename ContourPtrT::element_type::ValueType;
 
   if constexpr (std::same_as<OutputType, InputType>)
   {
@@ -688,14 +696,20 @@ template <ContourBaseType OutputType, ContourWrapperPtrType ContourPtrT>
     // 坐标转换（使用完美转发避免拷贝）
     for (const auto& p : contour->Points())
     {
-      converted.emplace_back(static_cast<OutputType>(p.x), static_cast<OutputType>(p.y));
+      if constexpr (std::same_as<OutputType, int>)
+      {
+        converted.emplace_back(cvRound(p.x), cvRound(p.y));
+      }
+      else
+      {
+        converted.emplace_back(static_cast<OutputType>(p.x),
+                               static_cast<OutputType>(p.y));
+      }
     }
 
     // 构造新轮廓（触发移动语义）
     return ContourWrapper<OutputType>::MakeContour(std::move(converted));
   }
-
-  return nullptr;
 }
 
 inline void find_contours(cv::InputArray image, std::vector<ContourConstPtr>& contours,
@@ -747,24 +761,22 @@ void draw_contour(cv::Mat& image, const std::shared_ptr<const ContourWrapper<T>>
     return;
   }
 
-  const auto& points = contour->Points();
-  std::vector<cv::Point> int_points;
-  int_points.reserve(points.size());
-
   if constexpr (std::is_same_v<T, int>)
   {
-    std::transform(points.begin(), points.end(), std::back_inserter(int_points),
-                   [](const cv::Point_<T>& p) { return cv::Point(p.x, p.y); });
+    cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour->Points()}, 0,
+                     color, thickness, lineType);
   }
   else
   {
-    std::transform(points.begin(), points.end(), std::back_inserter(int_points),
-                   [](const cv::Point_<T>& p)
-                   { return cv::Point(cvRound(p.x), cvRound(p.y)); });
+    std::vector<cv::Point> int_points;
+    int_points.reserve(contour->size());
+    for (const auto& p : contour->Points())
+    {
+      int_points.emplace_back(cvRound(p.x), cvRound(p.y));
+    }
+    cv::drawContours(image, std::vector<std::vector<cv::Point>>{std::move(int_points)}, 0,
+                     color, thickness, lineType);
   }
-
-  cv::drawContours(image, std::vector<std::vector<cv::Point>>{int_points}, 0, color,
-                   thickness, lineType);
 }
 
 inline void draw_contours(cv::InputOutputArray image,
@@ -797,7 +809,7 @@ inline void draw_contours(cv::InputOutputArray image,
 [[maybe_unused]] static bool delete_contour(std::vector<ContourConstPtr>& contours,
                                             std::vector<cv::Vec4i>& hierarchy, int index)
 {
-  if (index < 0 || index >= contours.size())
+  if (index < 0 || static_cast<size_t>(index) >= contours.size())
   {
     return false;
   }
@@ -820,7 +832,7 @@ inline void draw_contours(cv::InputOutputArray image,
     sub_idx = hierarchy[sub_idx][1];
   }
 
-  if (hierarchy[hierarchy[index][3]][2] == index)
+  if (hierarchy[index][3] != -1 && hierarchy[hierarchy[index][3]][2] == index)
   {
     hierarchy[hierarchy[index][3]][2] =
         (hierarchy[index][2] != -1)   ? hierarchy[index][2]
