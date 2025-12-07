@@ -121,6 +121,41 @@ class ContourWrapper
   static std::shared_ptr<ContourWrapper<int>> getConvexHull(
       const std::vector<std::shared_ptr<const ContourWrapper<int>>>& contours);
 
+ private:
+  // 标志位缓存
+  mutable std::bitset<16> cache_flags;
+
+  //----------------【直接存储】---------------------
+  std::vector<cv::Point_<int>> __points;
+  mutable double __area = 0;
+  mutable double __perimeter_close = 0;
+  mutable double __perimeter_open = 0;
+  mutable cv::Point_<float> __center = cv::Point_<float>(0, 0);
+  mutable double __convex_area = 0;  //!< 凸包面积
+
+  //----------------【缓存存储】---------------------
+  mutable std::unique_ptr<cv::Rect> __bounding_rect;
+  mutable std::unique_ptr<cv::RotatedRect> __min_area_rect;
+  mutable std::unique_ptr<std::tuple<cv::Point2f, float>> __fitted_circle;
+  mutable std::unique_ptr<cv::RotatedRect> __fitted_ellipse;
+  mutable std::unique_ptr<std::vector<cv::Point_<int>>> __convex_hull;
+  mutable std::unique_ptr<std::vector<int>> __convex_hull_idx;
+  // 标志位定义
+  enum CacheFlags
+  {
+    AREA_CALC = 0,              //!< 面积计算
+    PERIMETER_CLOSE_CALC = 1,   //!< 周长计算
+    PERIMETER_OPEN_CALC = 2,    //!< 开放式周长计算
+    CENTER_CALC = 3,            //!< 中心点计算
+    BOUNDING_RECT_CALC = 4,     //!< 外接矩形计算
+    MIN_AREA_RECT_CALC = 5,     //!< 最小外接矩形计算
+    FITTED_CIRCLE_CALC = 6,     //!< 拟合圆计算
+    FITTED_ELLIPSE_CALC = 7,    //!< 拟合椭圆计算
+    SMOOTHED_CONTOUR_CALC = 8,  //!< 平滑轮廓计算
+    CONVEX_HULL_CALC = 9,       //!< 凸包轮廓计算
+    CONVEX_HULL_IDX_CALC = 10,  //!< 凸包索引计算
+    CONVEX_HULL_AREA_CALC = 11  //!< 凸包面积计算
+  };
 };
 
 }  // namespace rune_detector
