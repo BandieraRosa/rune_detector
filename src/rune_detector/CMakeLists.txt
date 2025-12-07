@@ -4,9 +4,6 @@ project(rune_detector)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_definitions(-Wall -Werror)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # ##############################################################################
 # Find dependencies
 # ##############################################################################
@@ -14,8 +11,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(ament_cmake_auto REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
 
 ament_auto_find_build_dependencies()
 
@@ -26,7 +21,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED DIRECTORY src)
 
 # 链接库
 target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME}  ${OpenCV_LIBS} Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} Eigen3::Eigen)
 
 # 注册组件
 rclcpp_components_register_node(
