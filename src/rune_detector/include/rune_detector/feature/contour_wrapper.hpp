@@ -54,7 +54,7 @@ class ContourWrapper
   mutable std::unique_ptr<std::vector<cv::Point_<T>>> convex_hull_;
   mutable std::unique_ptr<std::vector<int>> convex_hull_idx_;
   // 标志位定义
-  enum CacheFlags
+  enum CacheFlags : uint8_t
   {
     AREA_CALC = 0,              //!< 面积计算
     PERIMETER_CLOSE_CALC = 1,   //!< 周长计算
@@ -70,6 +70,7 @@ class ContourWrapper
     CONVEX_HULL_AREA_CALC = 11  //!< 凸包面积计算
   };
 
+ private:
   /**
    * @brief 获取多轮廓的凸包轮廓
    */
@@ -226,6 +227,7 @@ class ContourWrapper
       {
         RCLCPP_ERROR(rclcpp::get_logger("rune_detector"),
                      "Contour has less than 3 points, cannot fit a circle.");
+        throw std::runtime_error("");
       }
     }
     return *fitted_circle_;
@@ -249,6 +251,7 @@ class ContourWrapper
         // 点数不足时触发异常
         RCLCPP_ERROR(rclcpp::get_logger("rune_detector"),
                      "Insufficient points for ellipse fitting");
+        throw std::runtime_error("");
       }
     }
     return *fitted_ellipse_;
@@ -327,6 +330,7 @@ class ContourWrapper
       if (contour == nullptr || contour->Points().empty())
       {
         RCLCPP_ERROR(rclcpp::get_logger("rune_detector"), "Invalid contour");
+        throw std::runtime_error("");
       }
     }
     return GetConvexHullImpl(contours);
