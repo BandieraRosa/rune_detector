@@ -518,7 +518,7 @@ inline void draw_contours(
  * @param index 要删除的轮廓下标
  * @return true 删除成功, false 索引无效
  */
-static bool deleteContour(
+static bool delete_contour(
     std::vector<std::shared_ptr<const ContourWrapper<int>>>& contours,
     std::vector<cv::Vec4i>& hierarchy, int index)
 {
@@ -569,6 +569,70 @@ static bool deleteContour(
   hierarchy.erase(hierarchy.begin() + index);
 
   return true;
+}
+
+/**
+ * @brief 递归获取指定轮廓的所有子轮廓下标（实现函数）
+ *
+ * @tparam T 容器类型，需要支持 insert 接口（如 std::vector<int>）
+ * @param hierarchy 所有轮廓的层级结构，由 OpenCV findContours 返回
+ * @param idx 当前轮廓下标
+ * @param sub_contours_idx 用于存储结果的容器
+ *
+ * @note 遍历当前轮廓的子节点，并递归获取所有子轮廓的索引。
+ */
+template <typename T>
+void get_all_sub_contours_idx_impl(const std::vector<cv::Vec4i>& hierarchy, int idx,
+                                   T& sub_contours_idx)
+{
+  using namespace std;
+  using namespace cv;
+
+  if (hierarchy[idx][2] == -1)
+  {
+    return;
+  }
+  int front_child_idx = hierarchy[idx][2];
+  while (front_child_idx != -1)
+  {
+    sub_contours_idx.insert(
+        sub_contours_idx.end(),
+        static_cast<typename T::value_type>(front_child_idx));  //!< 插入子轮廓下标
+    get_all_sub_contours_idx_impl(hierarchy, front_child_idx,
+                                  sub_contours_idx);  //!< 递归获取子轮廓
+    front_child_idx = hierarchy[front_child_idx][1];  //!< 获取下一个兄弟轮廓下标
+  }
+  if (hierarchy[hierarchy[idx][2]][0] == -1)
+  {
+    return;
+  }
+  int back_child_idx = hierarchy[hierarchy[idx][2]][0];
+  while (back_child_idx != -1)
+  {
+    sub_contours_idx.insert(
+        sub_contours_idx.end(),
+        static_cast<typename T::value_type>(back_child_idx));  //!< 插入子轮廓下标
+    get_all_sub_contours_idx_impl(hierarchy, back_child_idx,
+                                  sub_contours_idx);  //!< 递归获取子轮廓
+    back_child_idx = hierarchy[back_child_idx][0];    //!< 获取下一个兄弟轮廓下标
+  }
+}
+
+/**
+ * @brief 获取指定轮廓的所有子轮廓下标（接口函数）
+ *
+ * @tparam T 容器类型，需要支持 insert 接口（如 std::vector<int>）
+ * @param hierarchy 所有轮廓的层级结构，由 OpenCV findContours 返回
+ * @param idx 指定轮廓下标
+ * @param sub_contours_idx 用于存储结果的容器
+ *
+ * @note 调用内部递归实现函数完成子轮廓索引的收集。
+ */
+template <typename T>
+void get_all_sub_contours_idx(const std::vector<cv::Vec4i>& hierarchy, int idx,
+                              T& sub_contours_idx)
+{
+  get_all_sub_contours_idx_impl<T>(hierarchy, idx, sub_contours_idx);
 }
 
 }  // namespace rune_detector
