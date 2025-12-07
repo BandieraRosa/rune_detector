@@ -39,21 +39,21 @@ class ContourWrapper
    *
    * @param contour 轮廓点集
    */
-  inline static std::shared_ptr<ContourWrapper<int>> MakeContour(
-      const std::vector<cv::Point_<int>>& contour);
+  inline static std::shared_ptr<ContourWrapper<T>> MakeContour(
+      const std::vector<cv::Point_<T>>& contour);
 
   /**
    * @brief 创建轮廓对象
    *
    * @param contour 轮廓点集
    */
-  inline static std::shared_ptr<ContourWrapper<int>> MakeContour(
-      std::vector<cv::Point_<int>>&& contour);
+  inline static std::shared_ptr<ContourWrapper<T>> MakeContour(
+      std::vector<cv::Point_<T>>&& contour);
 
   /**
    * @brief 获取轮廓点集
    */
-  const std::vector<cv::Point_<int>>& Points() const;
+  const std::vector<cv::Point_<T>>& Points() const;
 
   /**
    * @brief 获取轮廓面积
@@ -93,7 +93,7 @@ class ContourWrapper
   /**
    * @brief 获取轮廓的凸包
    */
-  const std::vector<cv::Point_<int>>& ConvexHull() const;
+  const std::vector<cv::Point_<T>>& ConvexHull() const;
 
   /**
    * @brief 获取凸包的索引
@@ -113,20 +113,20 @@ class ContourWrapper
   /**
    * @brief 隐式转换
    */
-  operator const std::vector<cv::Point_<int>>&() const;
+  operator const std::vector<cv::Point_<T>>&() const;
 
   /**
    * @brief 获取轮廓的凸包轮廓——接口
    */
-  static std::shared_ptr<ContourWrapper<int>> GetConvexHull(
-      const std::vector<std::shared_ptr<const ContourWrapper<int>>>& contours);
+  static std::shared_ptr<ContourWrapper<T>> GetConvexHull(
+      const std::vector<std::shared_ptr<const ContourWrapper<T>>>& contours);
 
  private:
   // 标志位缓存
   mutable std::bitset<16> cache_flags_;
 
   //----------------【直接存储】---------------------
-  std::vector<cv::Point_<int>> __points;
+  std::vector<cv::Point_<T>> __points;
   mutable double __area = 0;
   mutable double __perimeter_close = 0;
   mutable double __perimeter_open = 0;
@@ -138,7 +138,7 @@ class ContourWrapper
   mutable std::unique_ptr<cv::RotatedRect> __min_area_rect;
   mutable std::unique_ptr<std::tuple<cv::Point2f, float>> __fitted_circle;
   mutable std::unique_ptr<cv::RotatedRect> __fitted_ellipse;
-  mutable std::unique_ptr<std::vector<cv::Point_<int>>> __convex_hull;
+  mutable std::unique_ptr<std::vector<cv::Point_<T>>> __convex_hull;
   mutable std::unique_ptr<std::vector<int>> __convex_hull_idx;
   // 标志位定义
   enum CacheFlags
