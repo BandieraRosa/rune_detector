@@ -164,7 +164,7 @@ class ContourWrapper
    */
   [[nodiscard]] double Area() const
   {
-    return area_.get([this] { return std::abs(cv::contourArea(points_)); });
+    return area_.Get([this] { return std::abs(cv::contourArea(points_)); });
   }
 
   /**
@@ -174,9 +174,9 @@ class ContourWrapper
   {
     if (closed)
     {
-      return perimeter_close_.get([this] { return cv::arcLength(points_, true); });
+      return perimeter_close_.Get([this] { return cv::arcLength(points_, true); });
     }
-    return perimeter_open_.get([this] { return cv::arcLength(points_, false); });
+    return perimeter_open_.Get([this] { return cv::arcLength(points_, false); });
   }
 
   /**
@@ -198,7 +198,7 @@ class ContourWrapper
    */
   [[nodiscard]] cv::Rect BoundingRect() const
   {
-    return bounding_rect_.get([this] { return cv::boundingRect(points_); });
+    return bounding_rect_.Get([this] { return cv::boundingRect(points_); });
   }
 
   /**
@@ -206,7 +206,7 @@ class ContourWrapper
    */
   [[nodiscard]] cv::RotatedRect MinAreaRect() const
   {
-    return min_area_rect_.get([this] { return cv::minAreaRect(points_); });
+    return min_area_rect_.Get([this] { return cv::minAreaRect(points_); });
   }
 
   /**
@@ -214,7 +214,7 @@ class ContourWrapper
    */
   [[nodiscard]] std::tuple<cv::Point2f, float> FittedCircle() const
   {
-    return fitted_circle_.get(
+    return fitted_circle_.Get(
         [this]() -> std::tuple<cv::Point2f, float>
         {
           if (points_.size() < 3)
@@ -233,7 +233,7 @@ class ContourWrapper
    */
   [[nodiscard]] cv::RotatedRect FittedEllipse() const
   {
-    return fitted_ellipse_.get(
+    return fitted_ellipse_.Get(
         [this]() -> cv::RotatedRect
         {
           if (points_.size() < 5)
@@ -249,7 +249,7 @@ class ContourWrapper
    */
   [[nodiscard]] const PointVec& ConvexHull() const
   {
-    return convex_hull_.get(
+    return convex_hull_.Get(
         [this]
         {
           PointVec hull;
@@ -263,7 +263,7 @@ class ContourWrapper
    */
   [[nodiscard]] const std::vector<int>& ConvexHullIdx() const
   {
-    return convex_hull_idx_.get(
+    return convex_hull_idx_.Get(
         [this]
         {
           std::vector<int> idx;
@@ -277,7 +277,7 @@ class ContourWrapper
    */
   float ConvexArea() const
   {
-    return convex_area_.get([this] { return std::abs(cv::contourArea(ConvexHull())); });
+    return convex_area_.Get([this] { return std::abs(cv::contourArea(ConvexHull())); });
   }
 
   /**
@@ -569,8 +569,9 @@ inline void draw_contours(
  * @param index 要删除的轮廓下标
  * @return true 删除成功, false 索引无效
  */
-bool delete_contour(std::vector<std::shared_ptr<const ContourWrapper<int>>>& contours,
-                    std::vector<cv::Vec4i>& hierarchy, int index)
+[[maybe_unused]] static bool delete_contour(
+    std::vector<std::shared_ptr<const ContourWrapper<int>>>& contours,
+    std::vector<cv::Vec4i>& hierarchy, int index)
 {
   if (index < 0 || index >= contours.size())
   {

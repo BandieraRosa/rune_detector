@@ -30,7 +30,7 @@ class LazyCache
    */
   template <std::invocable Generator>
     requires std::same_as<std::invoke_result_t<Generator>, T>
-  const T& get(Generator&& generator) const
+  const T& Get(Generator&& generator) const
   {
     if constexpr (ThreadSafe)
     {
@@ -51,12 +51,12 @@ class LazyCache
   /**
    * @brief 检查是否已缓存值
    */
-  [[nodiscard]] bool has_value() const noexcept { return value_.has_value(); }
+  [[nodiscard]] bool HasValue() const noexcept { return value_.has_value(); }
 
   /**
    * @brief 清除缓存值
    */
-  void reset() noexcept
+  void Reset() noexcept
   {
     value_.reset();
     if constexpr (ThreadSafe)
