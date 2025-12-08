@@ -9,11 +9,9 @@
  */
 #pragma once
 
-#include <memory>
 #include <opencv2/opencv.hpp>
 #include <rclcpp/logging.hpp>
 #include <span>
-#include <tuple>
 #include <vector>
 
 #include "rune_detector/feature/lazy_cache.hpp"
@@ -504,7 +502,8 @@ template <ContourBaseType T, bool ThreadSafe>
       {
         if (points_.size() < 3)
         {
-          throw std::runtime_error("Insufficient points for circle fitting");
+          throw std::runtime_error(
+              "[rune_detector]: Insufficient points for circle fitting");
         }
         cv::Point2f center;
         float radius{};
@@ -521,7 +520,8 @@ template <ContourBaseType T, bool ThreadSafe>
       {
         if (points_.size() < 5)
         {
-          throw std::runtime_error("Insufficient points for ellipse fitting");
+          throw std::runtime_error(
+              "[rune_detector]: Insufficient points for ellipse fitting");
         }
         return cv::fitEllipse(points_);
       });
@@ -577,8 +577,7 @@ auto ContourWrapper<T, ThreadSafe>::GetConvexHull(
   {
     if (contour == nullptr || contour->Points().empty())
     {
-      RCLCPP_ERROR(rclcpp::get_logger("rune_detector"), "Invalid contour");
-      throw std::runtime_error("");
+      throw std::runtime_error("[rune_detector]: Invalid contour");
     }
   }
   return GetConvexHullImpl(contours);
