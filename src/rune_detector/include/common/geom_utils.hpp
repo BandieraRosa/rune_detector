@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cmath>
 #include <opencv2/core.hpp>
-#include <vector>
 
 namespace rune_detector
 {

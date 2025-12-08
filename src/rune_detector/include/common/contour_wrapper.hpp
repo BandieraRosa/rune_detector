@@ -10,11 +10,10 @@
 #pragma once
 
 #include <opencv2/opencv.hpp>
-#include <rclcpp/logging.hpp>
 #include <span>
 #include <vector>
 
-#include "rune_detector/common/lazy_cache.hpp"
+#include "lazy_cache.hpp"
 
 namespace rune_detector
 {
@@ -784,8 +783,7 @@ inline void draw_contours(cv::InputOutputArray image,
       }
       else
       {
-        RCLCPP_WARN(rclcpp::get_logger("rune_detector"), "Contour at index %li is null.",
-                    i);
+        std::cout << "[rune_detector]: Contour at index " << i << " is null.\n";
       }
     }
   }
