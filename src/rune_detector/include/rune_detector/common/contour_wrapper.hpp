@@ -46,7 +46,7 @@ concept PointType = requires(T p) {
  *
  * @note 构造时会自动进行轮廓抗锯齿处理(approxPolyDP)，后续所有计算基于处理后的轮廓
  */
-template <ContourBaseType T = int, bool ThreadSafe = false>
+template <ContourBaseType T = int>
 class ContourWrapper
 {
  public:
@@ -233,18 +233,13 @@ using ContourConstPtr = Contour::ContourCPtr;
 using ContourFConstPtr = ContourF::ContourCPtr;
 using ContourDConstPtr = ContourD::ContourCPtr;
 
-// 线程安全
-using ContourTS = ContourWrapper<int, true>;
-using ContourFTS = ContourWrapper<float, true>;
-using ContourDTS = ContourWrapper<double, true>;
-
 template <typename T>
 struct IsContourWrapper : std::false_type
 {
 };
 
-template <ContourBaseType T, bool TS>
-struct IsContourWrapper<ContourWrapper<T, TS>> : std::true_type
+template <ContourBaseType T>
+struct IsContourWrapper<ContourWrapper<T>> : std::true_type
 {
 };
 
@@ -380,41 +375,38 @@ template <typename T>
 void get_all_sub_contours_idx(const std::vector<cv::Vec4i>& hierarchy, int idx,
                               T& sub_contours_idx);
 
-template <ContourBaseType T, bool ThreadSafe>
-ContourWrapper<T, ThreadSafe>::ContourWrapper(const PointVec& contour) : points_(contour)
+template <ContourBaseType T>
+ContourWrapper<T>::ContourWrapper(const PointVec& contour) : points_(contour)
 {
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-ContourWrapper<T, ThreadSafe>::ContourWrapper(PointVec&& contour) noexcept
+template <ContourBaseType T>
+ContourWrapper<T>::ContourWrapper(PointVec&& contour) noexcept
     : points_(std::move(contour))
 {
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] auto ContourWrapper<T, ThreadSafe>::MakeContour(const PointVec& points)
-    -> ContourPtr
+template <ContourBaseType T>
+[[nodiscard]] auto ContourWrapper<T>::MakeContour(const PointVec& points) -> ContourPtr
 {
   return std::make_shared<ContourWrapper>(points);
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] auto ContourWrapper<T, ThreadSafe>::MakeContour(PointVec&& points)
-    -> ContourPtr
+template <ContourBaseType T>
+[[nodiscard]] auto ContourWrapper<T>::MakeContour(PointVec&& points) -> ContourPtr
 {
   return std::make_shared<ContourWrapper>(std::move(points));
 }
 
-template <ContourBaseType T, bool ThreadSafe>
+template <ContourBaseType T>
 template <std::input_iterator It>
-[[nodiscard]] auto ContourWrapper<T, ThreadSafe>::MakeContour(It first, It last)
-    -> ContourPtr
+[[nodiscard]] auto ContourWrapper<T>::MakeContour(It first, It last) -> ContourPtr
 {
   return std::make_shared<ContourWrapper>(PointVec(first, last));
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-auto ContourWrapper<T, ThreadSafe>::GetConvexHullImpl(
+template <ContourBaseType T>
+auto ContourWrapper<T>::GetConvexHullImpl(
     const std::vector<std::shared_ptr<const ContourWrapper<T>>>& contours) -> ContourPtr
 {
   size_t total_point_size = 0;
@@ -430,37 +422,37 @@ auto ContourWrapper<T, ThreadSafe>::GetConvexHullImpl(
   }
   PointVec convex_hull;
   cv::convexHull(all_points, convex_hull);
-  return ContourWrapper<T, ThreadSafe>::MakeContour(std::move(convex_hull));
+  return MakeContour(std::move(convex_hull));
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] const typename ContourWrapper<T, ThreadSafe>::PointVec&
-ContourWrapper<T, ThreadSafe>::Points() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] const typename ContourWrapper<T>::PointVec& ContourWrapper<T>::Points()
+    const noexcept
 {
   return points_;
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] std::span<const typename ContourWrapper<T, ThreadSafe>::PointType>
-ContourWrapper<T, ThreadSafe>::View() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] std::span<const typename ContourWrapper<T>::PointType>
+ContourWrapper<T>::View() const noexcept
 {
   return points_;
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] ContourWrapper<T, ThreadSafe>::operator const PointVec&() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] ContourWrapper<T>::operator const PointVec&() const noexcept
 {
   return points_;
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] double ContourWrapper<T, ThreadSafe>::Area() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] double ContourWrapper<T>::Area() const noexcept
 {
   return area_.Get([this] { return std::abs(cv::contourArea(points_)); });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] double ContourWrapper<T, ThreadSafe>::Perimeter(bool closed) const noexcept
+template <ContourBaseType T>
+[[nodiscard]] double ContourWrapper<T>::Perimeter(bool closed) const noexcept
 {
   if (closed)
   {
@@ -469,9 +461,9 @@ template <ContourBaseType T, bool ThreadSafe>
   return perimeter_open_.Get([this] { return cv::arcLength(points_, false); });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] typename ContourWrapper<T, ThreadSafe>::KeyPointType
-ContourWrapper<T, ThreadSafe>::Center() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] typename ContourWrapper<T>::KeyPointType ContourWrapper<T>::Center()
+    const noexcept
 {
   return center_.Get(
       [this]
@@ -481,21 +473,20 @@ ContourWrapper<T, ThreadSafe>::Center() const noexcept
       });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] cv::Rect ContourWrapper<T, ThreadSafe>::BoundingRect() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] cv::Rect ContourWrapper<T>::BoundingRect() const noexcept
 {
   return bounding_rect_.Get([this] { return cv::boundingRect(points_); });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] cv::RotatedRect ContourWrapper<T, ThreadSafe>::MinAreaRect() const noexcept
+template <ContourBaseType T>
+[[nodiscard]] cv::RotatedRect ContourWrapper<T>::MinAreaRect() const noexcept
 {
   return min_area_rect_.Get([this] { return cv::minAreaRect(points_); });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] std::tuple<cv::Point2f, float> ContourWrapper<T, ThreadSafe>::FittedCircle()
-    const
+template <ContourBaseType T>
+[[nodiscard]] std::tuple<cv::Point2f, float> ContourWrapper<T>::FittedCircle() const
 {
   return fitted_circle_.Get(
       [this]() -> std::tuple<cv::Point2f, float>
@@ -512,8 +503,8 @@ template <ContourBaseType T, bool ThreadSafe>
       });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] cv::RotatedRect ContourWrapper<T, ThreadSafe>::FittedEllipse() const
+template <ContourBaseType T>
+[[nodiscard]] cv::RotatedRect ContourWrapper<T>::FittedEllipse() const
 {
   return fitted_ellipse_.Get(
       [this]() -> cv::RotatedRect
@@ -527,9 +518,9 @@ template <ContourBaseType T, bool ThreadSafe>
       });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] const typename ContourWrapper<T, ThreadSafe>::PointVec&
-ContourWrapper<T, ThreadSafe>::ConvexHull() const
+template <ContourBaseType T>
+[[nodiscard]] const typename ContourWrapper<T>::PointVec& ContourWrapper<T>::ConvexHull()
+    const
 {
   return convex_hull_.Get(
       [this]
@@ -540,8 +531,8 @@ ContourWrapper<T, ThreadSafe>::ConvexHull() const
       });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-[[nodiscard]] const std::vector<int>& ContourWrapper<T, ThreadSafe>::ConvexHullIdx() const
+template <ContourBaseType T>
+[[nodiscard]] const std::vector<int>& ContourWrapper<T>::ConvexHullIdx() const
 {
   return convex_hull_idx_.Get(
       [this]
@@ -552,14 +543,14 @@ template <ContourBaseType T, bool ThreadSafe>
       });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-double ContourWrapper<T, ThreadSafe>::ConvexArea() const noexcept
+template <ContourBaseType T>
+double ContourWrapper<T>::ConvexArea() const noexcept
 {
   return convex_area_.Get([this] { return std::abs(cv::contourArea(ConvexHull())); });
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-std::string ContourWrapper<T, ThreadSafe>::InfoString() const
+template <ContourBaseType T>
+std::string ContourWrapper<T>::InfoString() const
 {
   std::ostringstream oss;
   oss << "  Area: " << this->Area() << "\n";
@@ -568,8 +559,8 @@ std::string ContourWrapper<T, ThreadSafe>::InfoString() const
   return oss.str();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-auto ContourWrapper<T, ThreadSafe>::GetConvexHull(
+template <ContourBaseType T>
+auto ContourWrapper<T>::GetConvexHull(
     const std::vector<std::shared_ptr<const ContourWrapper<T>>>& contours) -> ContourPtr
 {
   // 检查所有轮廓是否有效
@@ -583,94 +574,89 @@ auto ContourWrapper<T, ThreadSafe>::GetConvexHull(
   return GetConvexHullImpl(contours);
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_iterator
-ContourWrapper<T, ThreadSafe>::begin() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_iterator ContourWrapper<T>::begin() const noexcept
 {
   return points_.begin();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_iterator
-ContourWrapper<T, ThreadSafe>::end() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_iterator ContourWrapper<T>::end() const noexcept
 {
   return points_.end();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_iterator
-ContourWrapper<T, ThreadSafe>::cbegin() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_iterator ContourWrapper<T>::cbegin() const noexcept
 {
   return points_.cbegin();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_iterator
-ContourWrapper<T, ThreadSafe>::cend() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_iterator ContourWrapper<T>::cend() const noexcept
 {
   return points_.cend();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_reverse_iterator
-ContourWrapper<T, ThreadSafe>::rbegin() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_reverse_iterator ContourWrapper<T>::rbegin()
+    const noexcept
 {
   return points_.rbegin();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_reverse_iterator
-ContourWrapper<T, ThreadSafe>::rend() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_reverse_iterator ContourWrapper<T>::rend()
+    const noexcept
 {
   return points_.rend();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_reverse_iterator
-ContourWrapper<T, ThreadSafe>::crbegin() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_reverse_iterator ContourWrapper<T>::crbegin()
+    const noexcept
 {
   return points_.crbegin();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-typename ContourWrapper<T, ThreadSafe>::const_reverse_iterator
-ContourWrapper<T, ThreadSafe>::crend() const noexcept
+template <ContourBaseType T>
+typename ContourWrapper<T>::const_reverse_iterator ContourWrapper<T>::crend()
+    const noexcept
 {
   return points_.crend();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-size_t ContourWrapper<T, ThreadSafe>::size() const noexcept
+template <ContourBaseType T>
+size_t ContourWrapper<T>::size() const noexcept
 {
   return points_.size();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-bool ContourWrapper<T, ThreadSafe>::empty() const noexcept
+template <ContourBaseType T>
+bool ContourWrapper<T>::empty() const noexcept
 {
   return points_.empty();
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-const cv::Point_<T>& ContourWrapper<T, ThreadSafe>::operator[](size_t idx) const noexcept
+template <ContourBaseType T>
+const cv::Point_<T>& ContourWrapper<T>::operator[](size_t idx) const noexcept
 {
   return points_[idx];
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-const cv::Point_<T>& ContourWrapper<T, ThreadSafe>::at(size_t idx) const
+template <ContourBaseType T>
+const cv::Point_<T>& ContourWrapper<T>::at(size_t idx) const
 {
   return points_.at(idx);
 }
 
-template <ContourBaseType T, bool ThreadSafe>
-const cv::Point_<T>& ContourWrapper<T, ThreadSafe>::front() const noexcept
+template <ContourBaseType T>
+const cv::Point_<T>& ContourWrapper<T>::front() const noexcept
 {
   return points_.front();
 }
-
-template <ContourBaseType T, bool ThreadSafe>
-const cv::Point_<T>& ContourWrapper<T, ThreadSafe>::back() const noexcept
+template <ContourBaseType T>
+const cv::Point_<T>& ContourWrapper<T>::back() const noexcept
 {
   return points_.back();
 }
@@ -906,6 +892,3 @@ void get_all_sub_contours_idx(const std::vector<cv::Vec4i>& hierarchy, int idx,
 template class rune_detector::ContourWrapper<int>;
 template class rune_detector::ContourWrapper<float>;
 template class rune_detector::ContourWrapper<double>;
-template class rune_detector::ContourWrapper<int, true>;
-template class rune_detector::ContourWrapper<float, true>;
-template class rune_detector::ContourWrapper<double, true>;
