@@ -16,7 +16,7 @@
 #include <tuple>
 #include <vector>
 
-#include "rune_detector/feature/thread_safe_lazy_cache.hpp"
+#include "rune_detector/feature/lazy_cache.hpp"
 
 namespace rune_detector
 {
@@ -68,7 +68,7 @@ class ContourWrapper
 
  private:
   template <typename U>
-  using Cache = LazyCache<U, ThreadSafe>;
+  using Cache = LazyCache<U>;
 
   PointVec points_;  // 轮廓点集
 
