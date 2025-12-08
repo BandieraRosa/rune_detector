@@ -14,7 +14,7 @@
 #include <span>
 #include <vector>
 
-#include "rune_detector/feature/lazy_cache.hpp"
+#include "rune_detector/common/lazy_cache.hpp"
 
 namespace rune_detector
 {
