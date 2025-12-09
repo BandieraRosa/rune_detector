@@ -150,3 +150,6 @@ using RuneTargetConstPtr =
     std::shared_ptr<const RuneTarget>;  //!< 只读 RuneTarget 智能指针
 
 }  // namespace rune_detector
+
+#include "feature/rune_target/rune_target_active.h"
+#include "feature/rune_target/rune_target_inactive.h"

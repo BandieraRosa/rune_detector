@@ -1,10 +1,7 @@
 #include "feature/rune_target/rune_target.h"
-#include "feature/rune_target/rune_target_active.h"
-#include "feature/rune_target/rune_target_inactive.h"
 
 namespace rune_detector
 {
-
 RuneTarget::RuneTarget(const ContourConstPtr& contour,
                        const std::vector<cv::Point2f>& corners)
 {
