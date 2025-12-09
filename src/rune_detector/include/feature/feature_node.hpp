@@ -1,10 +1,3 @@
-/**
- * @file feature_node.hpp
- * @author 张峰玮 (3480409161@qq.com)
- * @brief 特征节点基类定义文件
- * @date 2025-7-15
- */
-
 #pragma once
 
 #include <memory>
@@ -114,10 +107,7 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
    * @brief 访问图像信息缓存
    * @return 图像信息缓存的常量引用
    */
-  virtual const ImageCache& GetImageCache() const 
-  {
-    return this->getImageCache();
-  }
+  virtual const ImageCache& GetImageCache() const { return this->getImageCache(); }
 
   /**
    * @brief 访问位姿信息缓存
@@ -130,7 +120,7 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
    * @brief 获取子特征节点映射
    * @return 子特征节点映射的常量引用
    */
-  virtual const FeatureNodeMap& GetChildFeatures() const 
+  virtual const FeatureNodeMap& GetChildFeatures() const
   {
     return this->getChildFeatures();
   }
@@ -150,6 +140,30 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
     (void)config;  // 避免未使用参数警告
   }
 
+ public:
+  /**
+   * @brief 子特征类型定义
+   *
+   * @note 用于标识不同类型的子特征节点，便于在特征节点管理中进行分类和查询。
+   */
+  struct ChildFeatureType
+  {
+    static std::string rune_target_;  ///< 神符靶心子特征类型
+    static std::string rune_center_;  ///< 神符中心子特征类型
+    static std::string rune_fan_;     ///< 神符扇叶子特征类型
+  };
+
+  struct DrawConfig
+  {
+    cv::Scalar color = cv::Scalar(100, 255, 0);  ///< 绘制颜色（BGR 格式）
+    int thickness = 2;                           ///< 绘制线条粗细
+    DrawMask type = 0;                           ///< 绘制类型掩码，用于控制绘制层级
+    bool draw_contours = false;                  ///< 是否绘制轮廓
+    bool draw_corners = false;                   ///< 是否绘制角点
+    bool draw_center = false;                    ///< 是否绘制中心点
+    bool draw_pose_nodes = false;                ///< 是否绘制位姿节点
+  };
+
  protected:
 };
 
@@ -160,5 +174,14 @@ using FeatureNodeConstPtr = std::shared_ptr<const FeatureNode>;
 
 // #include "feature_node_child_feature_type.h"  // 子特征节点类型定义
 // #include "feature_node_draw_config.h"         // 绘制配置定义
+
+/// @brief 神符靶心子特征类型标识
+inline std::string FeatureNode::ChildFeatureType::rune_target_ = "rune_target";
+
+/// @brief 神符中心子特征类型标识
+inline std::string FeatureNode::ChildFeatureType::rune_center_ = "rune_center";
+
+/// @brief 神符扇叶子特征类型标识
+inline std::string FeatureNode::ChildFeatureType::rune_fan_ = "rune_fan";
 
 }  // namespace rune_detector

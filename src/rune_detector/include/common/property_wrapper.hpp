@@ -35,17 +35,14 @@
     if (!_##PROPERTY_NAME##_prop.has_value()) throw std::runtime_error("属性未设置"); \
     return *_##PROPERTY_NAME##_prop;                                                  \
   }                                                                                   \
-  bool isSet##PROPERTY_NAME() const                                           \
-  {                                                                                   \
-    return _##PROPERTY_NAME##_prop.has_value();                                       \
-  }                                                                                   \
+  bool isSet##PROPERTY_NAME() const { return _##PROPERTY_NAME##_prop.has_value(); }   \
   WRITE_SCOPE:                                                                        \
   template <typename U>                                                               \
   void set##PROPERTY_NAME(U&& value)                                                  \
   {                                                                                   \
     _##PROPERTY_NAME##_prop.emplace(std::forward<U>(value));                          \
   }                                                                                   \
-  void clear##PROPERTY_NAME()  { _##PROPERTY_NAME##_prop.reset(); }
+  void clear##PROPERTY_NAME() { _##PROPERTY_NAME##_prop.reset(); }
 
 /**
  * @brief 定义带初始值的属性宏
@@ -74,14 +71,11 @@
     if (!_##PROPERTY_NAME##_prop.has_value()) throw std::runtime_error("属性未设置");   \
     return *_##PROPERTY_NAME##_prop;                                                    \
   }                                                                                     \
-  bool isSet##PROPERTY_NAME() const                                             \
-  {                                                                                     \
-    return _##PROPERTY_NAME##_prop.has_value();                                         \
-  }                                                                                     \
+  bool isSet##PROPERTY_NAME() const { return _##PROPERTY_NAME##_prop.has_value(); }     \
   WRITE_SCOPE:                                                                          \
   template <typename U>                                                                 \
   void set##PROPERTY_NAME(U&& value)                                                    \
   {                                                                                     \
     _##PROPERTY_NAME##_prop.emplace(std::forward<U>(value));                            \
   }                                                                                     \
-  void clear##PROPERTY_NAME()  { _##PROPERTY_NAME##_prop.reset(); }
+  void clear##PROPERTY_NAME() { _##PROPERTY_NAME##_prop.reset(); }
