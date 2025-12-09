@@ -1,1 +1,1 @@
-#include "rune_detector/feature/contour_wrapper.hpp"
+#include "common/contour_wrapper.hpp"

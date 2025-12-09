@@ -35,7 +35,7 @@
     if (!_##PROPERTY_NAME##_prop.has_value()) throw std::runtime_error("属性未设置"); \
     return *_##PROPERTY_NAME##_prop;                                                  \
   }                                                                                   \
-  bool isSet##PROPERTY_NAME() const noexcept                                          \
+  bool isSet##PROPERTY_NAME() const                                           \
   {                                                                                   \
     return _##PROPERTY_NAME##_prop.has_value();                                       \
   }                                                                                   \
@@ -45,7 +45,7 @@
   {                                                                                   \
     _##PROPERTY_NAME##_prop.emplace(std::forward<U>(value));                          \
   }                                                                                   \
-  void clear##PROPERTY_NAME() noexcept { _##PROPERTY_NAME##_prop.reset(); }
+  void clear##PROPERTY_NAME()  { _##PROPERTY_NAME##_prop.reset(); }
 
 /**
  * @brief 定义带初始值的属性宏
@@ -74,7 +74,7 @@
     if (!_##PROPERTY_NAME##_prop.has_value()) throw std::runtime_error("属性未设置");   \
     return *_##PROPERTY_NAME##_prop;                                                    \
   }                                                                                     \
-  bool isSet##PROPERTY_NAME() const noexcept                                            \
+  bool isSet##PROPERTY_NAME() const                                             \
   {                                                                                     \
     return _##PROPERTY_NAME##_prop.has_value();                                         \
   }                                                                                     \
@@ -84,4 +84,4 @@
   {                                                                                     \
     _##PROPERTY_NAME##_prop.emplace(std::forward<U>(value));                            \
   }                                                                                     \
-  void clear##PROPERTY_NAME() noexcept { _##PROPERTY_NAME##_prop.reset(); }
+  void clear##PROPERTY_NAME()  { _##PROPERTY_NAME##_prop.reset(); }
