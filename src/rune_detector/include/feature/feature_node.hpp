@@ -1,15 +1,14 @@
 #pragma once
 
+#include <geometry_msgs/msg/detail/pose__struct.hpp>
 #include <memory>
 #include <opencv2/core.hpp>
 #include <string>
 #include <unordered_map>
 
 #include "common/contour_wrapper.hpp"
+#include "common/pose_node.hpp"
 #include "common/property_wrapper.hpp"
-// #include "vc/core/type_utils.h"
-// #include "vc/dataio/dataio.h"
-// #include "vc/math/pose_node.hpp"
 
 #define FEATURE_NODE_DEBUG 1
 
@@ -55,11 +54,33 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
   };
 
   /**
+   * @brief 陀螺仪数据结构
+   *
+   * @note 存储传感器测量的角度和角速度信息
+   */
+  struct GyroData
+  {
+    /**
+     * @brief 转动姿态信息
+     *
+     * @note 包含偏转角、俯仰角、滚转角及其角速度
+     */
+    struct Rotation
+    {
+      float yaw = 0.f;          //!< 偏转角（向右运动为正）
+      float pitch = 0.f;        //!< 俯仰角（向下运动为正）
+      float roll = 0.f;         //!< 滚转角（顺时针运动为正）
+      float yaw_speed = 0.f;    //!< 偏转角速度（向右运动为正）
+      float pitch_speed = 0.f;  //!< 俯仰角速度（向下运动为正）
+      float roll_speed = 0.f;   //!< 滚转角速度（顺时针运动为正）
+    } rotation;                 //!< 转动姿态实例
+  };
+
+  /**
    * @brief 位姿信息缓存块
    *
    * @note 存储特征节点对应的位姿数据，例如位姿节点映射和陀螺仪信息。
    */
-  /*
   struct PoseCache
   {
     /// @brief 位姿节点映射表类型
@@ -69,7 +90,6 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
     /// @brief 陀螺仪位姿信息
     DEFINE_PROPERTY(GyroData, public, public, (GyroData));
   };
-  */
 
   /// @brief 绘制配置结构体前置声明
   struct DrawConfig;
@@ -85,7 +105,7 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
   /// @brief 图像信息缓存
   DEFINE_PROPERTY_WITH_INIT(ImageCache, public, protected, (ImageCache), ImageCache());
   /// @brief 位姿信息缓存
-  //   DEFINE_PROPERTY_WITH_INIT(PoseCache, public, protected, (PoseCache), PoseCache());
+  DEFINE_PROPERTY_WITH_INIT(PoseCache, public, protected, (PoseCache), PoseCache());
   /// @brief 子特征节点映射表
   DEFINE_PROPERTY_WITH_INIT(ChildFeatures, public, protected, (FeatureNodeMap),
                             FeatureNodeMap());
@@ -113,8 +133,7 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
    * @brief 访问位姿信息缓存
    * @return 位姿信息缓存的常量引用
    */
-  //   virtual const PoseCache& poseCache() const  { return this->getPoseCache();
-  //   }
+  virtual const PoseCache& PoseCache() const { return this->getPoseCache(); }
 
   /**
    * @brief 获取子特征节点映射
@@ -129,12 +148,11 @@ class FeatureNode : public std::enable_shared_from_this<FeatureNode>
    * @brief 绘制特征节点
    *
    * @param[in,out] image 绘制目标图像
-   * @param[in] config 绘制配置指针，默认为nullptr
+   * @param[in] config 绘制配置指针
    *
    * @note 默认实现为空，子类可以重写此函数以实现具体绘制逻辑。
    */
-  virtual void DrawFeature(cv::Mat& image,
-                           const DrawConfigConstPtr& config = nullptr) const
+  virtual void DrawFeature(cv::Mat& image, const DrawConfigConstPtr& config) const
   {
     (void)image;   // 避免未使用参数警告
     (void)config;  // 避免未使用参数警告

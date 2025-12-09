@@ -270,7 +270,7 @@ template <ContourBaseType OutputType, ContourWrapperPtrType ContourPtrT>
  * @brief 增强版轮廓检测函数，返回智能轮廓对象集合
  *
  * @param image 输入二值图像 (建议使用 clone 保留原始数据)
- * @param contours 输出轮廓集合 (Contour_cptr)
+ * @param contours 输出轮廓集合 (ContourConstPtr)
  * @param hierarchy 输出轮廓层级信息
  * @param mode 轮廓检索模式 (默认为 cv::RETR_TREE)
  * @param method 轮廓近似方法 (默认为 cv::CHAIN_APPROX_NONE)
@@ -287,7 +287,7 @@ inline void find_contours(cv::InputArray image, std::vector<ContourConstPtr>& co
  * @brief 增强版轮廓检测函数，返回智能轮廓对象集合，使用 unordered_map 保存层级信息
  *
  * @param image 输入二值图像 (建议使用 clone 保留原始数据)
- * @param contours 输出轮廓集合 (Contour_cptr)
+ * @param contours 输出轮廓集合 (ContourConstPtr)
  * @param hierarchy 输出轮廓层级映射，格式为:
  *        std::unordered_map<当前轮廓, std::tuple<后一个轮廓, 前一个轮廓, 内嵌轮廓,
  * 父轮廓>>
