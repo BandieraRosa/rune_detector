@@ -16,6 +16,7 @@ rune_node:
          ACTIVE_MAX_AREA_RATIO_SUB_TEN_RING: 3.0000001192092896e-01
          ACTIVE_DEFAULT_SIDE: 50.
          ACTIVE_3D: [0., 0., 0.]
+
          INACTIVE_MIN_AREA: 60.
          INACTIVE_MAX_AREA: 20000.
          INACTIVE_MIN_SIDE_RATIO: 9.9000000953674316e-01
@@ -25,6 +26,7 @@ rune_node:
          INACTIVE_MIN_PERI_RATIO: 3.4999999403953552e-01
          INACTIVE_MAX_PERI_RATIO: 8.0000001192092896e-01
          INACTIVE_3D: [0., 0., 0.]
+
          GAP_MIN_AREA_RATIO: 2.5000000372529030e-02
          GAP_MAX_AREA_RATIO: 2.0000000298023224e-01
          GAP_MIN_SIDE_RATIO: 1.5499999523162842e+00
@@ -64,20 +66,15 @@ rune_node:
 
       # rune_target_draw parameters
       rune_target_draw:
-         active:
-            color: [0., 255., 0., 0.]
-            thickness: 2
-            point_radius: 3
-            default_circle_radius: 150.
+         active_color: [0., 255., 0., 0.]
+         active_thickness: 2
+         active_point_radius: 3
+         active_default_circle_radius: 150.
 
-         inactive:
-            color: [0., 255., 0., 0.]
-            thickness: 2
-            point_radius: 3
-            default_circle_radius: 150.
-            font_scale: 8.0000000000000004e-01
-            font_thickness: 2
-            font_color: [255., 255., 255., 0.]
-
-
-
+         inactive_color: [0., 255., 0., 0.]
+         inactive_thickness: 2
+         inactive_point_radius: 3
+         inactive_default_circle_radius: 150.
+         inactive_font_scale: 8.0000000000000004e-01
+         inactive_font_thickness: 2
+         inactive_font_color: [255., 255., 255., 0.]

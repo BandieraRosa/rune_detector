@@ -21,7 +21,7 @@
 namespace rune_detector
 {
 //! 神符靶心参数模块
-struct RuneTargetParam
+struct RuneTargetParam : public Param
 {
   //--------------------[通用]------------------------
   //! 靶心半径 / mm，仅用于可视化
@@ -62,7 +62,8 @@ struct RuneTargetParam
   float GAP_CIRCLE_RADIUS_RATIO = 0.7037f;  //!< 缺陷圆半径与最外层圆半径比
   float GAP_MAX_DISTANCE_RATIO = 0.80f;     //!< 缺陷中心距最大比例
   float GAP_MIN_DISTANCE_RATIO = 0.50f;     //!< 缺陷中心距最小比例
-  std::vector<cv::Point3d> GAP_3D = {       //!< PNP 缺口角点 3D 坐标
+  std::vector<cv::Point3d> GAP_3D = {
+      //!< PNP 缺口角点 3D 坐标
       cv::Point3d(-67.175, -67.175, 0), cv::Point3d(0, -95, 0),
       cv::Point3d(67.175, -67.175, 0),  cv::Point3d(95, 0, 0),
       cv::Point3d(67.175, 67.175, 0),   cv::Point3d(0, 95, 0),
@@ -78,9 +79,9 @@ struct RuneTargetParam
    * @param node ROS2 节点
    * @param ns   参数命名空间前缀
    */
-  void LoadFromNode(rclcpp::Node& node, const std::string& ns = "rune_target")
+  void LoadFromNode(rclcpp::Node& node) override
   {
-    const auto PREFIX = ns.empty() ? "" : ns + ".";
+    const std::string PREFIX = "rune_target.";
 
     auto get_param = [&](const std::string& key, auto& var, const auto& default_val)
     {
@@ -133,12 +134,12 @@ struct RuneTargetParam
     {
       std::vector<double> default_active3d = {0.0, 0.0, 0.0};
       get_param("ACTIVE_3D", default_active3d, default_active3d);
-      Params::restore_points3(default_active3d, ACTIVE_3D);
+      RestorePoints3(default_active3d, ACTIVE_3D);
     }
     {
       std::vector<double> default_inactive3d = {0.0, 0.0, 0.0};
       get_param("INACTIVE_3D", default_inactive3d, default_inactive3d);
-      Params::restore_points3(default_inactive3d, INACTIVE_3D);
+      RestorePoints3(default_inactive3d, INACTIVE_3D);
     }
     {
       std::vector<double> default_gap3d = {
@@ -146,17 +147,17 @@ struct RuneTargetParam
            -67.175, -67.175, 0, 0, -95, 0, 67.175,  -67.175, 0, 95,  0, 0,
            67.175,  67.175,  0, 0, 95,  0, -67.175, 67.175,  0, -95, 0, 0}};
       get_param("GAP_3D", default_gap3d, default_gap3d);
-      Params::restore_points3(default_gap3d, GAP_3D);
+      RestorePoints3(default_gap3d, GAP_3D);
     }
     {
-      std::vector<double> default_rot = Params::flatten_mat33(ROTATION);
+      std::vector<double> default_rot = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
       get_param("ROTATION", default_rot, default_rot);
-      Params::restore_mat33(default_rot, ROTATION);
+      RestoreMat33(default_rot, ROTATION);
     }
     {
       std::vector<double> default_trans = {0.0, -700.0, 0.0};
       get_param("TRANSLATION", default_trans, default_trans);
-      Params::restore_vec3(default_trans, TRANSLATION);
+      RestoreVec3(default_trans, TRANSLATION);
     }
   }
 };
@@ -164,7 +165,7 @@ struct RuneTargetParam
 inline RuneTargetParam rune_target_param;  //!< 全局参数实例
 
 //! 靶心绘制参数模块
-struct RuneTargetDrawParam
+struct RuneTargetDrawParam : public Param
 {
   //! 已激活靶心绘制参数
   struct Active
@@ -193,9 +194,9 @@ struct RuneTargetDrawParam
    * @param node ROS2 节点
    * @param ns   参数命名空间前缀
    */
-  void LoadFromNode(rclcpp::Node& node, const std::string& ns = "rune_target_draw")
+  void LoadFromNode(rclcpp::Node& node) override
   {
-    const auto PREFIX = ns.empty() ? "" : ns + ".";
+    const std::string PREFIX = "rune_target_draw.";
 
     auto get_param = [&](const std::string& key, auto& var, const auto& default_val)
     {
@@ -214,31 +215,30 @@ struct RuneTargetDrawParam
 
     // 加载已激活靶心绘制参数
     {
-      std::vector<double> default_color = Params::flatten_scalar(active.color);
-      get_param("active.color", default_color, default_color);
-      Params::restore_scalar(default_color, active.color);
+      std::vector<double> default_color = {0, 255, 0};
+      get_param("active_color", default_color, default_color);
+      RestoreScalar(default_color, active.color);
 
-      get_param("active.thickness", active.thickness, 2);
-      get_param("active.point_radius", active.point_radius, 3);
-      get_param("active.default_circle_radius", active.default_circle_radius, 150.0);
+      get_param("active_thickness", active.thickness, 2);
+      get_param("active_point_radius", active.point_radius, 3);
+      get_param("active_default_circle_radius", active.default_circle_radius, 150.0);
     }
 
     // 加载未激活靶心绘制参数
     {
-      std::vector<double> default_color = Params::flatten_scalar(inactive.color);
-      get_param("inactive.color", default_color, default_color);
-      Params::restore_scalar(default_color, inactive.color);
+      std::vector<double> default_color = {0, 255, 0};
+      get_param("inactive_color", default_color, default_color);
+      RestoreScalar(default_color, inactive.color);
 
-      get_param("inactive.thickness", inactive.thickness, 2);
-      get_param("inactive.point_radius", inactive.point_radius, 3);
-      get_param("inactive.default_circle_radius", inactive.default_circle_radius, 150.0);
-      get_param("inactive.font_scale", inactive.font_scale, 0.5);
-      get_param("inactive.font_thickness", inactive.font_thickness, 1);
+      get_param("inactive_thickness", inactive.thickness, 2);
+      get_param("inactive_point_radius", inactive.point_radius, 3);
+      get_param("inactive_default_circle_radius", inactive.default_circle_radius, 150.0);
+      get_param("inactive_font_scale", inactive.font_scale, 0.5);
+      get_param("inactive_font_thickness", inactive.font_thickness, 1);
 
-      std::vector<double> default_font_color =
-          Params::flatten_scalar(inactive.font_color);
-      get_param("inactive.font_color", default_font_color, default_font_color);
-      Params::restore_scalar(default_font_color, inactive.font_color);
+      std::vector<double> default_font_color = {255, 255, 255};
+      get_param("inactive_font_color", default_font_color, default_font_color);
+      RestoreScalar(default_font_color, inactive.font_color);
     }
   }
 };
