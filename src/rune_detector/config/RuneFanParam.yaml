@@ -1,0 +1,55 @@
+rune_node:
+   ros__parameters:
+      # rune_fan parameters
+      rune_fan:
+         ACTIVE_MAX_SIDE_RATIO: 1.7000000476837158e+00
+         ACTIVE_MIN_AREA: 100.
+         ACTIVE_MAX_AREA: 20000.
+         ACTIVE_MIN_AREA_RATIO: 5.0000000745058060e-02
+         ACTIVE_MAX_AREA_RATIO: 6.0000002384185791e-01
+         ACTIVE_MAX_AREA_PERIMETER_RATIO: 2.9999999329447746e-02
+         ACTIVE_MIN_AREA_PERIMETER_RATIO: 1.9999999494757503e-04
+         ACTIVE_TOP_3D: [-174., -32., 0., 0., 0., 0., 174., -32., 0.]
+         ACTIVE_BOTTOM_CENTER_3D: [0., 300., 0.]
+         ACTIVE_SIDE_3D: [-186., 123., 0., 186., 123., 0.]
+         ACTIVE_BOTTOM_SIDE_3D: [-57., 300., 0., 57., 300., 0.]
+         ACTIVE_TRANSLATION: [0., 195., 0.]
+         ACTIVE_ROTATION: [1., 0., 0., 0., 1., 0., 0., 0., 1.]
+         ACTIVE_MIN_AREA_INCOMPLETE: 30.
+         ACTIVE_MAX_AREA_PERIMETER_RATIO_INCOMPLETE: 7.0000000298023224e-02
+         ACTIVE_MAX_DIRECTION_DELTA_INCOMPLETE: 45.
+
+         INACTIVE_MAX_AREA_GROWTH_RATIO: 2.
+         INACTIVE_MAX_RECT_PROJECTION_RATIO: 2.
+         INACTIVE_MIN_AREA_RATIO: 8.0000001192092896e-01
+         INACTIVE_MERGE_DISTANCE_RATIO: 1.
+         INACTIVE_MAX_SIDE_RATIO: 7.
+         INACTIVE_MIN_SIDE_RATIO: 2.
+         INACTIVE_MIN_AREA: 100.
+         INACTIVE_MAX_AREA: 10000.
+         INACTIVE_MAX_DISTANCE_RATIO: 6.
+         INACTIVE_3D: [-30., 0., 0., 30., 0., 0., 30., 330., 0., -30., 330., 0.]
+         INACTIVE_TRANSLATION: [0., 175., 0.]
+         INACTIVE_ROTATION: [1., 0., 0., 0., 1., 0., 0., 0., 1.]
+
+      # rune_fan_draw parameters
+      rune_fan_draw:
+         active_color: [0., 255., 0., 0.]
+         active_thickness: 2
+         active_point_radius: 3
+         active_font_scale: 8.0000000000000004e-01
+         active_font_thickness: 2
+         active_font_color: [255., 255., 255., 0.]
+         active_arrow_thickness: 2
+         active_arrow_length: 70.
+         active_arrow_color: [255., 255., 255., 0.]
+
+         inactive_color: [0., 255., 0., 0.]
+         inactive_thickness: 2
+         inactive_point_radius: 3
+         inactive_font_scale: 5.0000000000000000e-01
+         inactive_font_thickness: 1
+         inactive_font_color: [255., 255., 255., 0.]
+         inactive_arrow_thickness: 2
+         inactive_arrow_length: 70.
+         inactive_arrow_color: [255., 255., 255., 0.]
