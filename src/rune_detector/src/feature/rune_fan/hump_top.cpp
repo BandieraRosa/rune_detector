@@ -1,9 +1,6 @@
-#include <numeric>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "common/geom_utils.hpp"
-#include "common/param.hpp"
 #include "feature/rune_fan/rune_fan_hump.h"
 #include "feature/rune_fan/rune_fan_hump_param.h"
 
@@ -34,48 +31,45 @@ struct TopHumpDebugParam : public Param
   }
 };
 
-inline TopHumpDebugParam top_hump_debug_param;
+static inline TopHumpDebugParam top_hump_debug_param;
 
 TopHump::TopHump(int _up_start_idx, int _up_end_idx, int _down_start_idx,
                  int _down_end_idx, int _line_pair_idx, const cv::Point2f& _direction,
                  const cv::Point2f& _center)
-    : up_start_idx(_up_start_idx),
-      up_end_idx(_up_end_idx),
-      down_start_idx(_down_start_idx),
-      down_end_idx(_down_end_idx),
-      line_pair_idx(_line_pair_idx),
-      up_itertaion_num(_up_end_idx - _up_start_idx),
-      down_itertaion_num(_down_end_idx - _down_start_idx),
-      end_iteration_up_idx(_up_end_idx),
-      current_state(DOWN)
+    : up_start_idx_(_up_start_idx),
+      up_end_idx_(_up_end_idx),
+      down_start_idx_(_down_start_idx),
+      down_end_idx_(_down_end_idx),
+      line_pair_idx_(_line_pair_idx),
+      up_itertaion_num_(_up_end_idx - _up_start_idx),
+      down_itertaion_num_(_down_end_idx - _down_start_idx),
+      end_iteration_up_idx_(_up_end_idx),
+      current_state_(State::DOWN)
 {
-  direction = _direction;
-  center = _center;
+  direction_ = _direction;
+  center_ = _center;
 }
 
-TopHump::TopHump(int up_idx, int down_idx, state find_state,
+TopHump::TopHump(int up_idx, int down_idx, State find_state,
                  const cv::Point2f& _direction)
-    : current_state(find_state),
-      up_itertaion_num(0),
-      down_itertaion_num(0),
-      end_iteration_up_idx(up_idx)
+    : current_state_(find_state), end_iteration_up_idx_(up_idx)
 {
-  direction = _direction;
-  if (find_state == UP)
+  direction_ = _direction;
+  if (find_state == State::UP)
   {
-    up_start_idx = up_idx;
-    down_start_idx = down_idx;
-    up_end_idx = down_end_idx = 0;
+    up_start_idx_ = up_idx;
+    down_start_idx_ = down_idx;
+    up_end_idx_ = down_end_idx_ = 0;
   }
-  else if (find_state == DOWN)
+  else if (find_state == State::DOWN)
   {
-    up_end_idx = up_idx;
-    down_end_idx = down_idx;
-    up_start_idx = down_start_idx = 0;
+    up_end_idx_ = up_idx;
+    down_end_idx_ = down_idx;
+    up_start_idx_ = down_start_idx_ = 0;
   }
 }
 
-std::vector<TopHump> TopHump::getTopHumps(
+std::vector<TopHump> TopHump::GetTopHumps(
     const std::vector<cv::Point>& contour_plus, const cv::Point2f& contour_center,
     const std::vector<std::tuple<Line, Line>>& line_pairs)
 {
@@ -86,7 +80,7 @@ std::vector<TopHump> TopHump::getTopHumps(
     return {};
   }
   std::vector<TopHump> humps{};
-  TopHump::getAllHumps2(contour_plus, line_pairs, humps);
+  TopHump::GetAllHumps2(contour_plus, line_pairs, humps);
   if (humps.size() < 3)
   {
     std::cout
@@ -94,7 +88,7 @@ std::vector<TopHump> TopHump::getTopHumps(
         << contour_plus.size() << '\n';
     return {};
   }
-  TopHump::filter(contour_plus, humps);
+  TopHump::Filter(contour_plus, humps);
   if (humps.size() < 3)
   {
     std::cout
@@ -104,63 +98,83 @@ std::vector<TopHump> TopHump::getTopHumps(
   }
   std::vector<std::tuple<TopHumpCombo, double>> hump_combos{};
   for (size_t i = 0; i < humps.size() - 2; ++i)
+  {
     for (size_t j = i + 1; j < humps.size() - 1; ++j)
+    {
       for (size_t k = j + 1; k < humps.size(); ++k)
       {
         TopHumpCombo hump_combo = {humps[i], humps[j], humps[k]};
         double delta = 0;
-        if (TopHump::make_TopHumps(hump_combo, contour_center, delta))
+        if (TopHump::MakeTopHumps(hump_combo, contour_center, delta))
+        {
           hump_combos.emplace_back(hump_combo, delta);
+        }
       }
-  if (hump_combos.empty()) return {};
+    }
+  }
+  if (hump_combos.empty())
+  {
+    return {};
+  }
   auto [best_combo, delta] =
       *min_element(hump_combos.begin(), hump_combos.end(),
                    [](const auto& a, const auto& b) { return get<1>(a) < get<1>(b); });
-  return best_combo.getHumpsVector();
+  return best_combo.GetHumpsVector();
 }
 
-float gaussian(float x, float sigma)
+static float gaussian(float x, float sigma)
 {
-  return (1.0 / (sqrt(2 * M_PI) * sigma)) * exp(-x * x / (2 * sigma * sigma));
+  return static_cast<float>(1.0 / (sqrt(2 * M_PI) * sigma)) *
+         exp(-x * x / (2 * sigma * sigma));
 }
-void normalize(std::vector<float>& kernel)
+static void normalize(std::vector<float>& kernel)
 {
   float sum = 0;
-  for (float k : kernel) sum += k;
-  for (float& k : kernel) k /= sum;
+  for (float k : kernel)
+  {
+    sum += k;
+  }
+  for (float& k : kernel)
+  {
+    k /= sum;
+  }
 }
-std::vector<float> createGaussianKernel(int size, float sigma)
+static std::vector<float> create_gaussian_kernel(int size, float sigma)
 {
   std::vector<float> kernel(size);
   int center = size / 2;
-  for (int i = 0; i < size; ++i) kernel[i] = gaussian(i - center, sigma);
+  for (int i = 0; i < size; ++i)
+  {
+    kernel[i] = gaussian(static_cast<float>(i - center), sigma);
+  }
   normalize(kernel);
   return kernel;
 }
 
-void TopHump::update(const TopHump& hump)
+void TopHump::Update(const TopHump& hump)
 {
-  current_state = hump.current_state;
-  if (current_state == UP)
+  current_state_ = hump.current_state_;
+  if (current_state_ == State::UP)
   {
-    up_start_idx = std::min(up_start_idx, hump.up_start_idx);
-    down_start_idx = std::min(down_start_idx, hump.down_start_idx);
-    up_itertaion_num++;
+    up_start_idx_ = std::min(up_start_idx_, hump.up_start_idx_);
+    down_start_idx_ = std::min(down_start_idx_, hump.down_start_idx_);
+    up_itertaion_num_++;
   }
-  else if (current_state == DOWN)
+  else if (current_state_ == State::DOWN)
   {
-    up_end_idx = std::max(up_end_idx, hump.up_end_idx);
-    down_end_idx = std::max(down_end_idx, hump.down_end_idx);
-    down_itertaion_num++;
+    up_end_idx_ = std::max(up_end_idx_, hump.up_end_idx_);
+    down_end_idx_ = std::max(down_end_idx_, hump.down_end_idx_);
+    down_itertaion_num_++;
   }
-  end_iteration_up_idx = hump.end_iteration_up_idx;
-  int iteration_num = up_itertaion_num + down_itertaion_num;
-  float ratio_old = float(iteration_num - 1) / iteration_num,
-        ratio_new = 1.0f / iteration_num;
-  direction = direction * ratio_old + hump.direction * ratio_new;
+  end_iteration_up_idx_ = hump.end_iteration_up_idx_;
+  int iteration_num = up_itertaion_num_ + down_itertaion_num_;
+  float ratio_old =
+            static_cast<float>(iteration_num - 1) / static_cast<float>(iteration_num),
+        ratio_new = static_cast<float>(1.0f) / static_cast<float>(iteration_num);
+  direction_ = direction_ * ratio_old + hump.direction_ * ratio_new;
 }
 
-inline bool TopHump::getAllHumps2(const std::vector<cv::Point>& contours_plus,
+inline bool TopHump::GetAllHumps2(const std::vector<cv::Point>& contours_plus,
                                   const std::vector<std::tuple<Line, Line>>& line_pairs,
                                   std::vector<TopHump>& humps)
 {
@@ -177,58 +191,80 @@ inline bool TopHump::getAllHumps2(const std::vector<cv::Point>& contours_plus,
     humps.emplace_back(up_start_idx, up_end_idx, down_start_idx, down_end_idx, i,
                        direction, center);
   }
-  for (auto& hump : humps) setVertex(hump, contours_plus);
+  for (auto& hump : humps)
+  {
+    SetVertex(hump, contours_plus);
+  }
   return humps.size() >= 3;
 }
 
-bool TopHump::filter(const std::vector<cv::Point>& contour_plus,
+bool TopHump::Filter(const std::vector<cv::Point>& /*contour_plus*/,
                      std::vector<TopHump>& humps)
 {
-  if (humps.empty()) return false;
+  if (humps.empty())
+  {
+    return false;
+  }
   for (auto it_1 = humps.begin(); it_1 != humps.end(); it_1++)
+  {
     for (auto it_2 = it_1 + 1; it_2 != humps.end();)
     {
-      if (get_vector_min_angle(it_1->getDirection(), it_2->getDirection(), DEG) <
+      if (get_vector_min_angle(it_1->GetDirection(), it_2->GetDirection(), DEG) <
           rune_fan_hump_param.TOP_HUMP_MAX_ALIGNMENT_DELTA)
       {
-        if (get_dist(it_1->getVertex(), it_2->getVertex()) <
-            rune_fan_hump_param.TOP_HUMP_MIN_INTERVAL)
+        if (get_dist(it_1->GetVertex(), it_2->GetVertex()) <
+            static_cast<float>(rune_fan_hump_param.TOP_HUMP_MIN_INTERVAL))
+        {
           it_2 = humps.erase(it_2);
+        }
         else
+        {
           it_2++;
+        }
       }
       else
       {
-        if (get_dist(it_1->getVertex(), it_2->getVertex()) <
-            2 * rune_fan_hump_param.TOP_HUMP_MIN_INTERVAL)
+        if (get_dist(it_1->GetVertex(), it_2->GetVertex()) <
+            static_cast<float>(2 * rune_fan_hump_param.TOP_HUMP_MIN_INTERVAL))
+        {
           it_2 = humps.erase(it_2);
+        }
         else
+        {
           it_2++;
+        }
       }
     }
+  }
   return true;
 }
 
-bool TopHump::make_TopHumps(TopHumpCombo& hump_combo, const cv::Point2f& contour_center,
-                            double& delta)
+bool TopHump::MakeTopHumps(TopHumpCombo& hump_combo, const cv::Point2f& contour_center,
+                           double& delta)
 {
-  auto& humps = hump_combo.humps();
+  auto& humps = hump_combo.Humps();
   std::vector<TopHump> humps_to_classify(humps.begin(), humps.end());
   TopHump left_h, right_h, center_h;
-  cv::Point2f aveVertex{};
-  for (auto& h : humps) aveVertex += h.getVertex();
-  aveVertex /= static_cast<float>(humps.size());
+  cv::Point2f ave_vertex{};
+  for (auto& h : humps)
+  {
+    ave_vertex += h.GetVertex();
+  }
+  ave_vertex /= static_cast<float>(humps.size());
   auto center_hump_it = min_element(humps_to_classify.begin(), humps_to_classify.end(),
                                     [&](const TopHump& h1, const TopHump& h2)
                                     {
-                                      return get_dist(h1.getVertex(), aveVertex) <
-                                             get_dist(h2.getVertex(), aveVertex);
+                                      return get_dist(h1.GetVertex(), ave_vertex) <
+                                             get_dist(h2.GetVertex(), ave_vertex);
                                     });
   center_h = *center_hump_it;
   humps_to_classify.erase(center_hump_it);
-  if (humps_to_classify.size() != 2) return false;
-  cv::Point2f c0 = humps_to_classify[0].getVertex() - contour_center,
-              c1 = humps_to_classify[1].getVertex() - contour_center;
+  if (humps_to_classify.size() != 2)
+  {
+    return false;
+  }
+  cv::Point2f c0 = humps_to_classify[0].GetVertex() - contour_center,
+              c1 = humps_to_classify[1].GetVertex() - contour_center;
   if (c0.x * c1.y - c0.y * c1.x > 0)
   {
     left_h = humps_to_classify[0];
@@ -240,59 +276,77 @@ bool TopHump::make_TopHumps(TopHumpCombo& hump_combo, const cv::Point2f& contour
     right_h = humps_to_classify[0];
   }
 
-  if (HumpDetector::CheckCollinearity(left_h.getVertex(), center_h.getVertex(),
-                                      right_h.getVertex()) >
+  if (HumpDetector::CheckCollinearity(left_h.GetVertex(), center_h.GetVertex(),
+                                      right_h.GetVertex()) >
       rune_fan_hump_param.TOP_HUMP_MAX_COLLINEAR_DELTA)
+  {
     return false;
+  }
 
-  if (get_vector_min_angle(center_h.getDirection(), center_h.getVertex() - contour_center,
+  if (get_vector_min_angle(center_h.GetDirection(), center_h.GetVertex() - contour_center,
                            DEG) > rune_fan_hump_param.TOP_HUMP_MAX_DIRECTION_DELTA)
+  {
     return false;
+  }
 
-  if (HumpDetector::CheckAlignment(left_h.getDirection(), center_h.getDirection(),
-                                   right_h.getDirection()) >
+  if (HumpDetector::CheckAlignment(left_h.GetDirection(), center_h.GetDirection(),
+                                   right_h.GetDirection()) >
       rune_fan_hump_param.TOP_HUMP_MAX_ALIGNMENT_DELTA)
+  {
     return false;
+  }
 
-  double distance_ratio = get_dist(left_h.getVertex(), center_h.getVertex()) /
-                          get_dist(center_h.getVertex(), right_h.getVertex());
-  if (distance_ratio < 1.0) distance_ratio = 1.0 / distance_ratio;
-  if (distance_ratio > rune_fan_hump_param.TOP_HUMP_MAX_DISTANCE_RATIO) return false;
+  double distance_ratio = get_dist(left_h.GetVertex(), center_h.GetVertex()) /
+                          get_dist(center_h.GetVertex(), right_h.GetVertex());
+  if (distance_ratio < 1.0)
+  {
+    distance_ratio = 1.0 / distance_ratio;
+  }
+  if (distance_ratio > rune_fan_hump_param.TOP_HUMP_MAX_DISTANCE_RATIO)
+  {
+    return false;
+  }
 
   cv::Vec4f line;
-  fitLine(std::vector<cv::Point2f>{left_h.getVertex(), center_h.getVertex(),
-                                   right_h.getVertex()},
+  fitLine(std::vector<cv::Point2f>{left_h.GetVertex(), center_h.GetVertex(),
+                                   right_h.GetVertex()},
           line, cv::DIST_L2, 0, 0.01, 0.01);
   cv::Point2f ave_direction =
-      (left_h.getDirection() + center_h.getDirection() + right_h.getDirection()) / 3.0;
+      (left_h.GetDirection() + center_h.GetDirection() + right_h.GetDirection()) / 3.0;
   double line_direction_delta =
       get_vector_min_angle(cv::Point2f(line[0], line[1]), ave_direction, DEG);
   line_direction_delta =
       line_direction_delta > 90 ? 180 - line_direction_delta : line_direction_delta;
 
   if (line_direction_delta < rune_fan_hump_param.TOP_HUMP_MIN_LINE_DIRECTION_DELTA)
+  {
     return false;
+  }
 
-  delta = pow(HumpDetector::CheckAlignment(left_h.getDirection(), center_h.getDirection(),
-                                           right_h.getDirection()),
+  delta = pow(HumpDetector::CheckAlignment(left_h.GetDirection(), center_h.GetDirection(),
+                                           right_h.GetDirection()),
               2);
   humps = {left_h, center_h, right_h};
   return true;
 }
 
-bool TopHump::setVertex(TopHump& hump, const std::vector<cv::Point>& contour_plus)
+bool TopHump::SetVertex(TopHump& hump, const std::vector<cv::Point>& contour_plus)
 {
-  if (contour_plus.size() < 20) return false;
+  if (contour_plus.size() < 20)
+  {
+    return false;
+  }
   auto farthest_point = max_element(
-      contour_plus.begin() + hump.up_start_idx, contour_plus.begin() + hump.down_end_idx,
+      contour_plus.begin() + hump.up_start_idx_,
+      contour_plus.begin() + hump.down_end_idx_,
       [&](const cv::Point& p1, const cv::Point& p2)
       {
-        return get_projection(cv::Point2f(p1) - hump.getCenter(), hump.getDirection()) <
-               get_projection(cv::Point2f(p2) - hump.getCenter(), hump.getDirection());
+        return get_projection(cv::Point2f(p1) - hump.GetCenter(), hump.GetDirection()) <
+               get_projection(cv::Point2f(p2) - hump.GetCenter(), hump.GetDirection());
       });
-  hump.vertex = hump.getCenter() +
-                get_projection_vector(cv::Point2f(*farthest_point) - hump.getCenter(),
-                                      hump.getDirection());
+  hump.vertex_ = hump.GetCenter() +
+                 get_projection_vector(cv::Point2f(*farthest_point) - hump.GetCenter(),
+                                       hump.GetDirection());
   return true;
 }
 

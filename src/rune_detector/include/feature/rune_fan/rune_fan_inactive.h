@@ -11,7 +11,6 @@
 #pragma once
 
 #include "rune_fan.h"
-#include "rune_fan_hump.h"
 
 namespace rune_detector
 {
@@ -39,7 +38,7 @@ class RuneFanInactive : public RuneFan
    * @param p_feature 输入 FeatureNode 智能指针
    * @return 转换后的 RuneFanInactive 智能指针
    */
-  static inline Ptr cast(FeatureNodePtr p_feature)
+  static inline Ptr Cast(const FeatureNodePtr& p_feature)
   {
     return std::dynamic_pointer_cast<RuneFanInactive>(p_feature);
   }
@@ -50,7 +49,7 @@ class RuneFanInactive : public RuneFan
    * @param[in] arrow_contours 箭头轮廓
    * @param[in] rotated_rect 最小面积矩形
    */
-  RuneFanInactive(const ContourConstPtr hull_contour,
+  RuneFanInactive(const ContourConstPtr& hull_contour,
                   const std::vector<ContourConstPtr>& arrow_contours,
                   const cv::RotatedRect& rotated_rect);
 
@@ -73,7 +72,7 @@ class RuneFanInactive : public RuneFan
    * @param[out] used_contour_idxs 使用了的轮廓下标
    * @param[in] inactive_targets 未激活的靶心
    */
-  static void find(std::vector<FeatureNodePtr>& fans,
+  static void Find(std::vector<FeatureNodePtr>& fans,
                    const std::vector<ContourConstPtr>& contours,
                    const std::vector<cv::Vec4i>& hierarchy,
                    const std::unordered_set<size_t>& mask,
@@ -90,10 +89,10 @@ class RuneFanInactive : public RuneFan
    * @return 成功返回 RuneFanInactive 智能指针，否则返回 nullptr
    * @note 利用PNP解算获取角点构造
    */
-  static std::shared_ptr<RuneFanInactive> make_feature(const cv::Point2f& top_left,
-                                                       const cv::Point2f& top_right,
-                                                       const cv::Point2f& bottom_right,
-                                                       const cv::Point2f& bottom_left);
+  static std::shared_ptr<RuneFanInactive> MakeFeature(const cv::Point2f& top_left,
+                                                      const cv::Point2f& top_right,
+                                                      const cv::Point2f& bottom_right,
+                                                      const cv::Point2f& bottom_left);
 
   /**
    * @brief 未激活扇叶的方向矫正
@@ -101,7 +100,7 @@ class RuneFanInactive : public RuneFan
    * @param[in] correct_center 矫正中心
    * @return 矫正成功返回 true，否则返回 false
    */
-  static bool correctDirection(FeatureNodePtr& fan, const cv::Point2f& correct_center);
+  static bool CorrectDirection(FeatureNodePtr& fan, const cv::Point2f& correct_center);
 
   /**
    * @brief 未激活扇叶的角点矫正
@@ -109,7 +108,7 @@ class RuneFanInactive : public RuneFan
    * @return 是否矫正成功
    * @note 矫正后向量 (__corners[2] - __corners[1]) 指向神符中心
    */
-  static bool correctCorners(FeatureNodePtr& fan);
+  static bool CorrectCorners(FeatureNodePtr& fan);
 
   /**
    * @brief 提取末端箭头轮廓
@@ -119,14 +118,14 @@ class RuneFanInactive : public RuneFan
    * @note 1. 返回灯臂中距离靶心最远的轮廓，用于强制构造神符中心
    *       2. 调用此函数会重新构造 fan，需在 fan 的 correct 函数前调用
    */
-  static ContourConstPtr getEndArrowContour(
+  static ContourConstPtr GetEndArrowContour(
       FeatureNodePtr& fan, const std::vector<FeatureNodeConstPtr>& target_inactive);
 
   /**
    * @brief 获取角点在图像坐标系和特征坐标系下的坐标
    * @return [0] 图像坐标系 [1] 特征坐标系 [2] 各点权重
    */
-  virtual auto getPnpPoints() const
+  virtual auto GetPnpPoints() const
       -> std::tuple<std::vector<cv::Point2f>, std::vector<cv::Point3f>,
                     std::vector<float>> override;
 
@@ -137,7 +136,7 @@ class RuneFanInactive : public RuneFan
    * @note 默认实现为空，子类可重载实现具体绘制逻辑
    */
   virtual void DrawFeature(cv::Mat& image,
-                           const DrawConfigConstPtr& config = nullptr) const override;
+                           const DrawConfigConstPtr& config) const override;
 
  protected:
   /**
@@ -145,10 +144,10 @@ class RuneFanInactive : public RuneFan
    * @param[in] contours 轮廓组
    * @return 成功返回 RuneFanInactive 智能指针，否则返回 nullptr
    */
-  static Ptr make_feature(const std::vector<ContourConstPtr>& contours);
+  static Ptr MakeFeature(const std::vector<ContourConstPtr>& contours);
 };
 
-using RuneFanInactive_ptr = std::shared_ptr<RuneFanInactive>;         //!< 可修改智能指针
-using RuneFanInactive_cptr = std::shared_ptr<const RuneFanInactive>;  //!< 只读智能指针
+using RuneFanInactivePtr = std::shared_ptr<RuneFanInactive>;  //!< 可修改智能指针
+using RuneFanInactiveConstPtr = std::shared_ptr<const RuneFanInactive>;  //!< 只读智能指针
 
 }  // namespace rune_detector

@@ -9,6 +9,7 @@
 
 #include <unordered_set>
 
+#include "common/geom_utils.hpp"
 #include "feature/feature_node.hpp"
 
 namespace rune_detector
@@ -41,7 +42,7 @@ class RuneFan : public FeatureNode
    * @param p_feature 输入 FeatureNode 指针
    * @return 转换后的 RuneFan 指针
    */
-  static inline std::shared_ptr<RuneFan> cast(FeatureNodePtr p_feature)
+  static inline std::shared_ptr<RuneFan> Cast(const FeatureNodePtr& p_feature)
   {
     return std::dynamic_pointer_cast<RuneFan>(p_feature);
   }
@@ -51,7 +52,8 @@ class RuneFan : public FeatureNode
    * @param p_feature 输入 const FeatureNode 指针
    * @return 转换后的 const RuneFan 指针
    */
-  static inline const std::shared_ptr<const RuneFan> cast(FeatureNodeConstPtr p_feature)
+  static inline const std::shared_ptr<const RuneFan> Cast(
+      const FeatureNodeConstPtr& p_feature)
   {
     return std::dynamic_pointer_cast<const RuneFan>(p_feature);
   }
@@ -64,7 +66,7 @@ class RuneFan : public FeatureNode
    * @param[in] mask 可以跳过构造的轮廓下标集合
    * @param[out] used_contour_idxs 使用了的轮廓下标集合
    */
-  static void find_active_fans(
+  static void FindActiveFans(
       std::vector<FeatureNodePtr>& fans, const std::vector<ContourConstPtr>& contours,
       const std::vector<cv::Vec4i>& hierarchy, const std::unordered_set<size_t>& mask,
       std::unordered_map<FeatureNodeConstPtr, std::unordered_set<size_t>>&
@@ -79,7 +81,7 @@ class RuneFan : public FeatureNode
    * @param[out] used_contour_idxs 使用了的轮廓下标集合
    * @param[in] inactive_targets 未激活的靶心特征
    */
-  static void find_inactive_fans(
+  static void FindInactiveFans(
       std::vector<FeatureNodePtr>& fans, const std::vector<ContourConstPtr>& contours,
       const std::vector<cv::Vec4i>& hierarchy, const std::unordered_set<size_t>& mask,
       std::unordered_map<FeatureNodeConstPtr, std::unordered_set<size_t>>&
@@ -95,7 +97,7 @@ class RuneFan : public FeatureNode
    * @param[in] rotate_center 旋转中心
    * @param[out] used_contour_idxs 使用了的轮廓下标集合
    */
-  static void find_incomplete_active_fans(
+  static void FindIncompleteActiveFans(
       std::vector<FeatureNodePtr>& fans, const std::vector<ContourConstPtr>& contours,
       const std::vector<cv::Vec4i>& hierarchy, const std::unordered_set<size_t>& mask,
       const cv::Point2f& rotate_center,
@@ -108,14 +110,14 @@ class RuneFan : public FeatureNode
    * @param is_active 是否激活
    * @return 若构造成功则返回指针，否则返回 nullptr
    */
-  static auto make_feature(const PoseNode& fan_to_cam, bool is_active)
-      -> std::shared_ptr<RuneFan>;
+  static auto MakeFeature(const PoseNode& fan_to_cam, bool is_active, const cv::Mat& k,
+                          const cv::Mat& d) -> std::shared_ptr<RuneFan>;
 
   /**
    * @brief 获取角点在图像坐标系和特征坐标系下的坐标
    * @return [0] 图像坐标系 [1] 特征坐标系 [2] 各个点的权重
    */
-  virtual auto getPnpPoints() const
+  virtual auto GetPnpPoints() const
       -> std::tuple<std::vector<cv::Point2f>, std::vector<cv::Point3f>,
                     std::vector<float>>;
 
@@ -123,13 +125,13 @@ class RuneFan : public FeatureNode
    * @brief 获取角点在图像坐标系和旋转中心坐标系下的坐标
    * @return [0] 图像坐标系 [1] 旋转中心坐标系 [2] 各个点的权重
    */
-  auto getRelativePnpPoints() const
+  auto GetRelativePnpPoints() const
       -> std::tuple<std::vector<cv::Point2f>, std::vector<cv::Point3f>,
                     std::vector<float>>;
 
  protected:
 };  // namespace rune_detectorclassRuneFan:public FeatureNode
-using RuneFan_ptr = std::shared_ptr<RuneFan>;
-using RuneFan_cptr = std::shared_ptr<const RuneFan>;
+using RuneFanPtr = std::shared_ptr<RuneFan>;
+using RuneFanConstPtr = std::shared_ptr<const RuneFan>;
 
 }  // namespace rune_detector

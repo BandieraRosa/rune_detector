@@ -71,7 +71,7 @@ class RuneFanActive : public RuneFan
    * @param p_feature 输入的 FeatureNode 智能指针
    * @return 转换后的 RuneFanActive 智能指针
    */
-  static inline std::shared_ptr<RuneFanActive> cast(FeatureNodePtr p_feature)
+  static inline std::shared_ptr<RuneFanActive> Cast(const FeatureNodePtr& p_feature)
   {
     return std::dynamic_pointer_cast<RuneFanActive>(p_feature);
   }
@@ -84,7 +84,7 @@ class RuneFanActive : public RuneFan
    * @param[in] mask 可跳过构造的轮廓下标集合
    * @param[out] used_contour_idxs 使用了的轮廓下标集合
    */
-  static void find(std::vector<FeatureNodePtr>& fans,
+  static void Find(std::vector<FeatureNodePtr>& fans,
                    const std::vector<ContourConstPtr>& contours,
                    const std::vector<cv::Vec4i>& hierarchy,
                    const std::unordered_set<size_t>& mask,
@@ -101,7 +101,7 @@ class RuneFanActive : public RuneFan
    * @param[out] used_contour_idxs 使用了的轮廓下标集合
    * @return 是否成功找到残缺扇叶
    */
-  static bool find_incomplete(
+  static bool FindIncomplete(
       std::vector<FeatureNodePtr>& fans, const std::vector<ContourConstPtr>& contours,
       const std::vector<cv::Vec4i>& hierarchy, const std::unordered_set<size_t>& mask,
       const cv::Point2f& rotate_center,
@@ -117,10 +117,10 @@ class RuneFanActive : public RuneFan
    * @return 成功返回 RuneFanActive 智能指针，否则返回 nullptr
    * @note 利用PNP解算获取角点构造，输入角点顺序有要求
    */
-  static Ptr make_feature(const std::vector<cv::Point2d>& top_corners,
-                          const std::vector<cv::Point2d>& bottom_center_corners,
-                          const std::vector<cv::Point2d>& side_corners,
-                          const std::vector<cv::Point2d>& bottom_side_corners);
+  static Ptr MakeFeature(const std::vector<cv::Point2d>& top_corners,
+                         const std::vector<cv::Point2d>& bottom_center_corners,
+                         const std::vector<cv::Point2d>& side_corners,
+                         const std::vector<cv::Point2d>& bottom_side_corners);
 
  protected:
   /**
@@ -128,7 +128,7 @@ class RuneFanActive : public RuneFan
    * @param[in] contour 轮廓
    * @return 成功返回 RuneFanActive 智能指针，否则返回 nullptr
    */
-  static Ptr make_feature(const ContourConstPtr& contour);
+  static Ptr MakeFeature(const ContourConstPtr& contour);
 
   /**
    * @brief 已激活 RuneFan 的缺陷构造接口（单独角点）
@@ -137,9 +137,9 @@ class RuneFanActive : public RuneFan
    * @param[in] hump_3 第三个突起点
    * @return 成功返回 RuneFanActive 智能指针，否则返回 nullptr
    */
-  static Ptr make_feature(const std::tuple<TopHump, ContourConstPtr>& hump_1,
-                          const std::tuple<TopHump, ContourConstPtr>& hump_2,
-                          const std::tuple<TopHump, ContourConstPtr>& hump_3);
+  static Ptr MakeFeature(const std::tuple<TopHump, ContourConstPtr>& hump_1,
+                         const std::tuple<TopHump, ContourConstPtr>& hump_2,
+                         const std::tuple<TopHump, ContourConstPtr>& hump_3);
 
   /**
    * @brief 通过扇叶位姿PNP解算结果构造 RuneFan
@@ -147,7 +147,7 @@ class RuneFanActive : public RuneFan
    * @param[in] is_active 是否激活
    * @return 构造成功返回智能指针，否则返回 nullptr
    */
-  static Ptr make_feature(const PoseNode& fan_to_cam, bool is_active);
+  static Ptr MakeFeature(const PoseNode& fan_to_cam, bool is_active);
 
   /**
    * @brief 绘制特征
@@ -156,7 +156,7 @@ class RuneFanActive : public RuneFan
    * @note 默认实现为空，子类可重载实现具体绘制逻辑
    */
   virtual void DrawFeature(cv::Mat& image,
-                           const DrawConfigConstPtr& config = nullptr) const override;
+                           const DrawConfigConstPtr& config) const override;
 
  public:
   /**
@@ -164,14 +164,14 @@ class RuneFanActive : public RuneFan
    * @param[in] contour_plus 加长后的轮廓
    * @return 轮廓角度矩阵
    */
-  static cv::Mat getAngles(const std::vector<cv::Point>& contour_plus);
+  static cv::Mat GetAngles(const std::vector<cv::Point>& contour_plus);
 
   /**
    * @brief 获取角度矩阵梯度
    * @param[in] angles_mat 角度矩阵
    * @return 梯度矩阵
    */
-  static cv::Mat getGradient(const cv::Mat& angles_mat);
+  static cv::Mat GetGradient(const cv::Mat& angles_mat);
 
   /**
    * @brief 获取所有直线对
@@ -181,7 +181,7 @@ class RuneFanActive : public RuneFan
    * @param[out] line_pairs 输出的直线对
    * @return 是否成功获取直线对
    */
-  static bool getLinePairs(const std::vector<cv::Point>& contour_plus,
+  static bool GetLinePairs(const std::vector<cv::Point>& contour_plus,
                            const cv::Mat& angles_mat, const cv::Mat& gradient_mat,
                            std::vector<std::tuple<Line, Line>>& line_pairs);
 
@@ -189,7 +189,7 @@ class RuneFanActive : public RuneFan
    * @brief 获取角点在图像坐标系和特征坐标系下的坐标
    * @return [0] 图像坐标系 [1] 特征坐标系 [2] 各点权重
    */
-  virtual auto getPnpPoints() const
+  virtual auto GetPnpPoints() const
       -> std::tuple<std::vector<cv::Point2f>, std::vector<cv::Point3f>,
                     std::vector<float>> override;
 
@@ -203,14 +203,14 @@ class RuneFanActive : public RuneFan
    * @param[out] direction 输出扇叶方向单位向量（指向神符中心）
    * @return 是否成功获取角点
    */
-  static bool getActiveFunCorners(const ContourConstPtr& contour,
+  static bool GetActiveFunCorners(const ContourConstPtr& contour,
                                   std::vector<cv::Point2f>& top_hump_corners,
                                   std::vector<cv::Point2f>& bottom_center_hump_corners,
                                   std::vector<cv::Point2f>& side_hump_corners,
                                   std::vector<cv::Point2f>& bottom_side_hump_corners);
 };
 
-using RuneFanActive_ptr = std::shared_ptr<RuneFanActive>;  //!< 可修改的智能指针
-using RuneFanActive_cptr = std::shared_ptr<const RuneFanActive>;
+using RuneFanActivePtr = std::shared_ptr<RuneFanActive>;  //!< 可修改的智能指针
+using RuneFanActiveConstPtr = std::shared_ptr<const RuneFanActive>;
 //!< 只读智能指针
 }  // namespace rune_detector

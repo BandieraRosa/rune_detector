@@ -1,6 +1,3 @@
-#include <numeric>
-
-#include "common/geom_utils.hpp"
 #include "feature/rune_fan/rune_fan_hump.h"
 #include "feature/rune_fan/rune_fan_hump_param.h"
 
@@ -9,25 +6,37 @@ namespace rune_detector
 
 SideHump::SideHump(const cv::Point2f& _direction, const cv::Point2f& _center)
 {
-  direction = _direction;
-  center = _center;
+  direction_ = _direction;
+  center_ = _center;
 }
 
 // 获取侧边突起点
-std::vector<SideHump> SideHump::getSideHumps(
+std::vector<SideHump> SideHump::GetSideHumps(
     const std::vector<cv::Point>& contour_plus, const cv::Point2f& contour_center,
     const std::vector<TopHump>& top_humps,
-    const std::vector<BottomCenterHump>& bottom_center_humps,
+    const std::vector<BottomCenterHump>& /*bottom_center_humps*/,
     std::vector<std::tuple<Line, Line>>& line_pairs)
 {
-  if (line_pairs.size() < 2) return {};
+  if (line_pairs.size() < 2)
+  {
+    return {};
+  }
 
   std::vector<SideHump> humps;
-  if (!getAllHumps(top_humps, line_pairs, humps) || humps.size() < 2) return {};
+  if (!GetAllHumps(top_humps, line_pairs, humps) || humps.size() < 2)
+  {
+    return {};
+  }
 
-  for (auto& hump : humps) setVertex(hump, contour_plus);
-  filter(humps);
-  if (humps.size() < 2) return {};
+  for (auto& hump : humps)
+  {
+    SetVertex(hump, contour_plus);
+  }
+  Filter(humps);
+  if (humps.size() < 2)
+  {
+    return {};
+  }
 
   std::vector<std::tuple<std::vector<SideHump>, double>> hump_groups;
 
@@ -38,12 +47,17 @@ std::vector<SideHump> SideHump::getSideHumps(
     {
       std::vector<SideHump> temp_humps = {humps[i], humps[j]};
       double delta = 0;
-      if (make_SideHumps(temp_humps, top_humps, contour_center, delta))
+      if (MakeSideHumps(temp_humps, top_humps, contour_center, delta))
+      {
         hump_groups.emplace_back(temp_humps, delta);
+      }
     }
   }
 
-  if (hump_groups.empty()) return {};
+  if (hump_groups.empty())
+  {
+    return {};
+  }
 
   return std::get<0>(*min_element(hump_groups.begin(), hump_groups.end(),
                                   [](const auto& a, const auto& b)
@@ -51,7 +65,7 @@ std::vector<SideHump> SideHump::getSideHumps(
 }
 
 // 获取所有候选侧边突起点
-bool SideHump::getAllHumps(const std::vector<TopHump>& top_humps,
+bool SideHump::GetAllHumps(const std::vector<TopHump>& top_humps,
                            const std::vector<std::tuple<Line, Line>>& line_pairs,
                            std::vector<SideHump>& humps)
 {
@@ -64,27 +78,42 @@ bool SideHump::getAllHumps(const std::vector<TopHump>& top_humps,
   }
 
   std::unordered_set<int> line_pair_idx_set;
-  for (int i = 0; i < line_pairs.size(); ++i) line_pair_idx_set.insert(i);
-  for (auto& top_hump : top_humps) line_pair_idx_set.erase(top_hump.getLinePairIdx());
+  for (int i = 0; i < line_pairs.size(); ++i)
+  {
+    line_pair_idx_set.insert(i);
+  }
+  for (auto& top_hump : top_humps)
+  {
+    line_pair_idx_set.erase(top_hump.GetLinePairIdx());
+  }
 
-  auto isSideHump = [&](const cv::Point2f& top_center, const cv::Point2f& top_dir,
-                        const cv::Point2f& center, const cv::Point2f& dir)
+  auto is_side_hump = [&](const cv::Point2f& top_center, const cv::Point2f& top_dir,
+                          const cv::Point2f& center, const cv::Point2f& dir)
   {
     if (get_vector_min_angle(top_dir, dir, DEG) >
         rune_fan_hump_param.SIDE_HUMP_MAX_ANGLE_DELTA)
+    {
       return false;
-    cv::Point2f v1 = top_dir, v2 = top_center - center, v3 = dir;
-    if (v1.cross(v2) * v2.cross(v3) < 0) return false;
+    }
+    const cv::Point2f& v1 = top_dir;
+    cv::Point2f v2 = top_center - center;
+    const cv::Point2f& v3 = dir;
+    if (v1.cross(v2) * v2.cross(v3) < 0)
+    {
+      return false;
+    }
     if (get_vector_min_angle(v1, v2, DEG) >
             rune_fan_hump_param.SIDE_HUMP_MAX_ANGLE_DELTA / 2.0 ||
         get_vector_min_angle(v2, v3, DEG) >
             rune_fan_hump_param.SIDE_HUMP_MAX_ANGLE_DELTA / 2.0)
+    {
       return false;
+    }
     return true;
   };
 
-  cv::Point2f l_center = top_humps[0].getCenter(), l_dir = top_humps[0].getDirection();
-  cv::Point2f r_center = top_humps[2].getCenter(), r_dir = top_humps[2].getDirection();
+  cv::Point2f l_center = top_humps[0].GetCenter(), l_dir = top_humps[0].GetDirection();
+  cv::Point2f r_center = top_humps[2].GetCenter(), r_dir = top_humps[2].GetDirection();
 
   for (auto& idx : line_pair_idx_set)
   {
@@ -95,12 +124,12 @@ bool SideHump::getAllHumps(const std::vector<TopHump>& top_humps,
     float to_l = get_dist(center, l_center);
     float to_r = get_dist(center, r_center);
 
-    if (to_l < to_r && isSideHump(l_center, l_dir, center, dir))
+    if (to_l < to_r && is_side_hump(l_center, l_dir, center, dir))
     {
       humps.emplace_back(
           dir, get_line_intersection(l_center, l_center + l_dir, center, center + dir));
     }
-    else if (to_r <= to_l && isSideHump(r_center, r_dir, center, dir))
+    else if (to_r <= to_l && is_side_hump(r_center, r_dir, center, dir))
     {
       humps.emplace_back(
           dir, get_line_intersection(r_center, r_center + r_dir, center, center + dir));
@@ -111,32 +140,36 @@ bool SideHump::getAllHumps(const std::vector<TopHump>& top_humps,
 }
 
 // 设置突起点的顶点位置
-bool SideHump::setVertex(SideHump& hump, const std::vector<cv::Point>& /*contour_plus*/)
+bool SideHump::SetVertex(SideHump& hump, const std::vector<cv::Point>& /*contour_plus*/)
 {
-  hump.vertex = hump.center;
+  hump.vertex_ = hump.center_;
   return true;
 }
 
 // 过滤几乎重合的突起点
-bool SideHump::filter(std::vector<SideHump>& humps)
+bool SideHump::Filter(std::vector<SideHump>& humps)
 {
   for (auto it1 = humps.begin(); it1 != humps.end(); ++it1)
   {
     for (auto it2 = it1 + 1; it2 != humps.end();)
     {
-      if (get_dist(it1->getCenter(), it2->getCenter()) < 10)
+      if (get_dist(it1->GetCenter(), it2->GetCenter()) < 10)
+      {
         it2 = humps.erase(it2);
+      }
       else
+      {
         ++it2;
+      }
     }
   }
   return true;
 }
 
 // 确定左右侧突起点
-bool SideHump::make_SideHumps(std::vector<SideHump>& humps,
-                              const std::vector<TopHump>& top_humps,
-                              const cv::Point2f& /*contour_center*/, double& delta)
+bool SideHump::MakeSideHumps(std::vector<SideHump>& humps,
+                             const std::vector<TopHump>& top_humps,
+                             const cv::Point2f& /*contour_center*/, double& delta)
 {
   if (humps.size() != 2)
   {
@@ -146,15 +179,21 @@ bool SideHump::make_SideHumps(std::vector<SideHump>& humps,
     return false;
   }
 
-  cv::Point2f fan_dir = top_humps[1].getDirection();
-  cv::Point2f fan_center = top_humps[1].getCenter();
+  cv::Point2f fan_dir = top_humps[1].GetDirection();
+  cv::Point2f fan_center = top_humps[1].GetCenter();
 
-  double cross0 = (humps[0].getCenter() - fan_center).cross(fan_dir);
-  double cross1 = (humps[1].getCenter() - fan_center).cross(fan_dir);
+  double cross0 = (humps[0].GetCenter() - fan_center).cross(fan_dir);
+  double cross1 = (humps[1].GetCenter() - fan_center).cross(fan_dir);
 
-  if (cross0 * cross1 > 0) return false;
+  if (cross0 * cross1 > 0)
+  {
+    return false;
+  }
 
-  if (cross0 < 0) std::swap(humps[0], humps[1]);
+  if (cross0 < 0)
+  {
+    std::swap(humps[0], humps[1]);
+  }
   delta = 0;
   return true;
 }
