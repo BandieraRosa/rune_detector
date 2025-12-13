@@ -1,0 +1,19 @@
+rune_node:
+  ros__parameters:
+    rune_center:
+      MAX_AREA: 1500.
+      MIN_AREA: 20.
+      MAX_SIDE_RATIO: 2.5000000000000000e+00
+      MIN_SIDE_RATIO: 2.0000001788139343e-01
+      MAX_SUB_AREA_RATIO: 5.0000000000000000e-01
+      MIN_CONVEX_AREA_RATIO: 2.9999998211860657e-01
+      MIN_ROUNDNESS: 1.0000000894069672e-01
+      MIN_AREA_FOR_RATIO: 70.
+      DEFAULT_SIDE: 20.
+      CENTER_CONCENTRICITY_RATIO: 8.0000000000000002e-02
+      TRANSLATION: [0., 650., -1.6566000366210938e+02]
+      ROTATION: [1., 0., 0., 0., 1., 0., 0., 0., 1.]
+    rune_center_draw:
+      color: [0., 255., 0., 0.]
+      thickness: 2
+      default_radius: 30.
