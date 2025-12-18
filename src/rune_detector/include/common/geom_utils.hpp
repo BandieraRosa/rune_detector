@@ -9,13 +9,17 @@
 
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
 
 #include <cmath>
 #include <geometry_msgs/msg/pose.hpp>
 #include <limits>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <vector>
+
+#include "common/pose_node.hpp"
 
 //! 角度制
 enum AngleMode : bool
@@ -401,8 +405,7 @@ inline cv::Matx<Tp, 3, 3> gyro_euler2_rot_mat(Tp yaw, Tp pitch)
          euler2mat(deg2rad(-1 * pitch), EulerAxis::X);
 }
 
-inline void pose_to_open_cv(const geometry_msgs::msg::Pose& pose, cv::Vec3d& rvec,
-                            cv::Vec3d& tvec)
+inline void pose_to_opencv(const PoseNode& pose, cv::Vec3d& rvec, cv::Vec3d& tvec)
 {
   // 平移向量直接赋值
   tvec[0] = pose.position.x;
@@ -429,10 +432,9 @@ inline void pose_to_open_cv(const geometry_msgs::msg::Pose& pose, cv::Vec3d& rve
 /**
  * @brief 将 OpenCV 的 rvec 和 tvec 转换为 ROS Pose
  */
-inline geometry_msgs::msg::Pose open_cv_to_pose(const cv::Vec3d& rvec,
-                                                const cv::Vec3d& tvec)
+inline PoseNode opencv_to_pose(const cv::Vec3d& rvec, const cv::Vec3d& tvec)
 {
-  geometry_msgs::msg::Pose pose;
+  PoseNode pose;
 
   // 平移
   pose.position.x = tvec[0];
@@ -454,5 +456,66 @@ inline geometry_msgs::msg::Pose open_cv_to_pose(const cv::Vec3d& rvec,
   pose.orientation.z = q.z();
   pose.orientation.w = q.w();
 
+  return pose;
+}
+inline PoseNode opencv_to_pose(const cv::Vec3f& rvec, const cv::Vec3f& tvec)
+{
+  PoseNode pose;
+
+  // 平移
+  pose.position.x = tvec[0];
+  pose.position.y = tvec[1];
+  pose.position.z = tvec[2];
+
+  // 旋转：向量 -> 矩阵 -> 四元数
+  cv::Matx33f rmat;
+  cv::Rodrigues(rvec, rmat);
+
+  tf2::Matrix3x3 m(rmat(0, 0), rmat(0, 1), rmat(0, 2), rmat(1, 0), rmat(1, 1), rmat(1, 2),
+                   rmat(2, 0), rmat(2, 1), rmat(2, 2));
+
+  tf2::Quaternion q;
+  m.getRotation(q);
+
+  pose.orientation.x = q.x();
+  pose.orientation.y = q.y();
+  pose.orientation.z = q.z();
+  pose.orientation.w = q.w();
+
+  return pose;
+}
+// Pose -> tf2::Transform
+inline tf2::Transform pose_to_tf(const PoseNode& p)
+{
+  tf2::Transform t;
+  tf2::fromMsg(p, t);
+  return t;
+}
+
+inline PoseNode tf_to_pose(const tf2::Transform& T)
+{
+  PoseNode p;
+  p.position.x = T.getOrigin().x();
+  p.position.y = T.getOrigin().y();
+  p.position.z = T.getOrigin().z();
+  p.orientation = tf2::toMsg(T.getRotation());
+  return p;
+}
+
+inline PoseNode compose_poses(const PoseNode& A, const PoseNode& B)
+{
+  tf2::Transform ta = pose_to_tf(A);
+  tf2::Transform tb = pose_to_tf(B);
+
+  tf2::Transform tans = ta * tb;
+  return tf_to_pose(tans);
+}
+inline PoseNode transform_to_pose(const geometry_msgs::msg::TransformStamped& tf)
+{
+  PoseNode pose;
+  pose.position.x = tf.transform.translation.x;
+  pose.position.y = tf.transform.translation.y;
+  pose.position.z = tf.transform.translation.z;
+  pose.orientation = tf.transform.rotation;
   return pose;
 }
