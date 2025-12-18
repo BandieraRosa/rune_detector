@@ -267,7 +267,7 @@ RuneTargetActivePtr RuneTargetActive::MakeFeature(const PoseNode& target_to_cam,
                                       {-rune_target_param.RADIUS, 0, 0}};
   std::vector<cv::Point2f> corners_2d, temp_rune_center;
   cv::Vec3d rvec, tvec;
-  pose_to_open_cv(target_to_cam, rvec, tvec);
+  pose_to_opencv(target_to_cam, rvec, tvec);
   projectPoints(corners_3d, rvec, tvec, k, d, corners_2d);
   projectPoints(std::vector<cv::Point3f>{cv::Point3f(0, 0, 0)}, rvec, tvec, k, d,
                 temp_rune_center);

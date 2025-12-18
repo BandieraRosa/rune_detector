@@ -737,7 +737,7 @@ RuneTargetInactivePtr RuneTargetInactive::MakeFeature(const PoseNode& target_to_
   }
   vector<Point2f> corners_2d, temp_rune_center;
   cv::Vec3d rvec, tvec;
-  pose_to_open_cv(target_to_cam, rvec, tvec);
+  pose_to_opencv(target_to_cam, rvec, tvec);
   projectPoints(corners_3d, rvec, tvec, k, d, corners_2d);
   projectPoints(vector<Point3f>{Point3f(0, 0, 0)}, rvec, tvec, k, d, temp_rune_center);
   auto result_ptr = make_shared<RuneTargetInactive>(temp_rune_center[0], corners_2d);

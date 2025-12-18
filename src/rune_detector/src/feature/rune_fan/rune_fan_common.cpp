@@ -96,7 +96,7 @@ RuneFanPtr RuneFan::MakeFeature(const PoseNode& fan_to_cam, bool is_active,
   RuneFanPtr result_ptr;
 
   cv::Vec3d rvec, tvec;
-  pose_to_open_cv(fan_to_cam, rvec, tvec);
+  pose_to_opencv(fan_to_cam, rvec, tvec);
 
   if (is_active)
   {

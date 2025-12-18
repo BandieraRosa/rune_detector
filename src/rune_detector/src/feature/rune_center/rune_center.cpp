@@ -280,7 +280,7 @@ std::shared_ptr<RuneCenter> RuneCenter::MakeFeature(const PoseNode& center_to_ca
   vector<Point2f> points_2d_reproject{};
 
   cv::Vec3d rvec, tvec;
-  pose_to_open_cv(center_to_cam, rvec, tvec);
+  pose_to_opencv(center_to_cam, rvec, tvec);
 
   projectPoints(points_mat_3d, rvec, tvec, k, d, points_2d_reproject);
 
