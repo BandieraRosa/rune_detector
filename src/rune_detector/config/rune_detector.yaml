@@ -1,0 +1,13 @@
+rune_detector_node:
+  ros__parameters:
+    image_topic: "/image_raw"
+    camera_info_topic: "/camera_info"
+
+    # "red" or "blue"
+    target_color: "red"
+
+    # If <=0, use rm_vision_core default thresholds (GRAY_THRESHOLD_RED/BLUE)
+    color_threshold: 50
+
+    # publish detection results topic
+    detections_topic: "/rune/detections"
