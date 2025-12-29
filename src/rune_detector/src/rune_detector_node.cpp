@@ -112,6 +112,7 @@ void RuneDetectorNode::ImageCallback(
 
   RuneDetections out;
   out.header = img_msg->header;
+  out.header.frame_id = "camera_optical_frame";
 
   if (out.header.frame_id.empty())
   {
