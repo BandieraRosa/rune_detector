@@ -44,7 +44,7 @@ class RuneDetectorNode : public rclcpp::Node
   std::string camera_info_topic_;
   std::string detections_topic_;
   std::string target_color_str_;
-  int color_threshold_{50};
+  uint32_t color_threshold_;
 
   rclcpp::Publisher<rune_interfaces::msg::RuneDetections>::SharedPtr detections_pub_;
 

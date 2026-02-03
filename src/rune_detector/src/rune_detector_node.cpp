@@ -1,5 +1,7 @@
 #include "rune_detector/rune_detector_node.h"
 
+#include <cstdint>
+
 using rune_interfaces::msg::RuneDetections;
 
 namespace
@@ -89,7 +91,7 @@ void RuneDetectorNode::ImageCallback(
   PixChannel target_color =
       (target_color_str_ == "blue") ? PixChannel::BLUE : PixChannel::RED;
 
-  int thresh = color_threshold_;
+  uint32_t thresh = color_threshold_;
   if (thresh <= 0)
   {
     thresh = (target_color == PixChannel::RED) ? rune_detector_param.GRAY_THRESHOLD_RED
