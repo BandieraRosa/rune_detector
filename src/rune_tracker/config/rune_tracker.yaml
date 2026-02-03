@@ -1,0 +1,17 @@
+rune_tracker_node:
+  ros__parameters:
+    detections_topic: "/rune/detections"
+    target_topic: "/rune/target"
+
+    # tf2
+    output_frame: "gimbal_odom"
+    tf_timeout_ms: 30
+
+    # EKF + prediction
+    predict_dt: 0.12   # seconds ahead (bullet + pipeline latency)
+
+    # target selection policy:
+    # "pending" -> choose PENDING_STRUCK first
+    # "struck"  -> choose STRUCK first
+    # "any"     -> choose first non-UNKNOWN
+    aim_policy: "pending"
