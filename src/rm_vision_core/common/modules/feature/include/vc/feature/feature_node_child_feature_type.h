@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+
 #include "feature_node.h"
 
 /**
@@ -17,9 +18,9 @@
  */
 struct FeatureNode::ChildFeatureType
 {
-    static std::string RUNE_TARGET; ///< 神符靶心子特征类型
-    static std::string RUNE_CENTER; ///< 神符中心子特征类型
-    static std::string RUNE_FAN;    ///< 神符扇叶子特征类型
+  static std::string RUNE_TARGET;  ///< 神符靶心子特征类型
+  static std::string RUNE_CENTER;  ///< 神符中心子特征类型
+  static std::string RUNE_FAN;     ///< 神符扇叶子特征类型
 };
 
 /// @brief 神符靶心子特征类型标识

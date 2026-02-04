@@ -21,23 +21,23 @@ struct DetectorOutput;
  */
 class Detector
 {
-public:
-    /// @brief 默认析构函数
-    virtual ~Detector() = default;
+ public:
+  /// @brief 默认析构函数
+  virtual ~Detector() = default;
 
-    /**
-     * @brief 识别器主函数
-     *
-     * @param[in] input 识别器输入参数
-     * @param[out] output 识别器输出结果
-     *
-     * @note 该函数为纯虚函数，需由具体识别器实现。
-     */
-    virtual void detect(DetectorInput &input, DetectorOutput &output) = 0;
+  /**
+   * @brief 识别器主函数
+   *
+   * @param[in] input 识别器输入参数
+   * @param[out] output 识别器输出结果
+   *
+   * @note 该函数为纯虚函数，需由具体识别器实现。
+   */
+  virtual void detect(DetectorInput& input, DetectorOutput& output) = 0;
 };
 
 /// @brief 识别器基类智能指针类型
 using Detector_ptr = std::shared_ptr<Detector>;
 
-#include "detector_input.h"  ///< DetectorInput 结构体定义
-#include "detector_output.h" ///< DetectorOutput 结构体定义
+#include "detector_input.h"   ///< DetectorInput 结构体定义
+#include "detector_output.h"  ///< DetectorOutput 结构体定义

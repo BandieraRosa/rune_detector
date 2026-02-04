@@ -15,8 +15,8 @@
  */
 struct RuneParam
 {
-private:
-    YML_INIT(RuneParam, );
+ private:
+  YML_INIT(RuneParam, );
 };
 
 //! RuneParam 参数实例

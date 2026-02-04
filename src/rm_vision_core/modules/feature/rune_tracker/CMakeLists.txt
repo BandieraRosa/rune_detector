@@ -1,2 +1,1 @@
-VisCore_add_module(rune_tracker
-DEPENDS rune_combo) 
+viscore_add_module(rune_tracker DEPENDS rune_combo)

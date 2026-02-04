@@ -8,8 +8,8 @@
 #pragma once
 
 #include "vc/core/yml_manager.hpp"
-#include "vc/feature/feature_node.h"
 #include "vc/dataio/dataio.h"
+#include "vc/feature/feature_node.h"
 
 /**
  * @brief 识别器的输出参数
@@ -18,9 +18,9 @@
  */
 struct DetectorOutput
 {
-    /// @brief 识别结果（特征节点集合）
-    DEFINE_PROPERTY(FeatureNodes, public, public, (std::vector<FeatureNode_ptr>));
+  /// @brief 识别结果（特征节点集合）
+  DEFINE_PROPERTY(FeatureNodes, public, public, (std::vector<FeatureNode_ptr>));
 
-    /// @brief 识别有效性标志
-    DEFINE_PROPERTY(Valid, public, public, (bool));
+  /// @brief 识别有效性标志
+  DEFINE_PROPERTY(Valid, public, public, (bool));
 };

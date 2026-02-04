@@ -1,3 +1,1 @@
-VisCore_add_module(math
-INTERFACE
-DEPENDS core) 
+viscore_add_module(math INTERFACE DEPENDS core)

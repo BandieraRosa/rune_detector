@@ -12,8 +12,6 @@ g_gain: 1024
 r_gain: 1628
 grab_mode: 1
 retrieve_mode: 1
-auto_exposure: 0
-auto_wb: 0
 cameraMatrix: !!opencv-matrix
    rows: 3
    cols: 3

@@ -15,9 +15,9 @@
  */
 enum class RuneFilterDataType : unsigned int
 {
-    XYZ = 1 << 0,       //!< 仅滤波位移数据 x, y, z
-    YAW_PITCH = 1 << 1, //!< 仅滤波 yaw 和 pitch 角
-    ROLL = 1 << 2,      //!< 仅滤波 roll 角
+  XYZ = 1 << 0,        //!< 仅滤波位移数据 x, y, z
+  YAW_PITCH = 1 << 1,  //!< 仅滤波 yaw 和 pitch 角
+  ROLL = 1 << 2,       //!< 仅滤波 roll 角
 };
 
 /**
@@ -28,8 +28,9 @@ enum class RuneFilterDataType : unsigned int
  */
 inline RuneFilterDataType operator|(RuneFilterDataType a, RuneFilterDataType b)
 {
-    using underlying = std::underlying_type_t<RuneFilterDataType>;
-    return static_cast<RuneFilterDataType>(static_cast<underlying>(a) | static_cast<underlying>(b));
+  using underlying = std::underlying_type_t<RuneFilterDataType>;
+  return static_cast<RuneFilterDataType>(static_cast<underlying>(a) |
+                                         static_cast<underlying>(b));
 }
 
 /**
@@ -40,8 +41,9 @@ inline RuneFilterDataType operator|(RuneFilterDataType a, RuneFilterDataType b)
  */
 inline RuneFilterDataType operator&(RuneFilterDataType a, RuneFilterDataType b)
 {
-    using underlying = std::underlying_type_t<RuneFilterDataType>;
-    return static_cast<RuneFilterDataType>(static_cast<underlying>(a) & static_cast<underlying>(b));
+  using underlying = std::underlying_type_t<RuneFilterDataType>;
+  return static_cast<RuneFilterDataType>(static_cast<underlying>(a) &
+                                         static_cast<underlying>(b));
 }
 
 /**
@@ -51,6 +53,6 @@ inline RuneFilterDataType operator&(RuneFilterDataType a, RuneFilterDataType b)
  */
 inline RuneFilterDataType operator~(RuneFilterDataType a)
 {
-    using underlying = std::underlying_type_t<RuneFilterDataType>;
-    return static_cast<RuneFilterDataType>(~static_cast<underlying>(a));
+  using underlying = std::underlying_type_t<RuneFilterDataType>;
+  return static_cast<RuneFilterDataType>(~static_cast<underlying>(a));
 }

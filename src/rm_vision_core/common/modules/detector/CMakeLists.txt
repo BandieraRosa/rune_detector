@@ -1,4 +1,1 @@
-VisCore_add_module(detector
-INTERFACE
-DEPENDS core feature math
-) 
+viscore_add_module(detector INTERFACE DEPENDS core feature math)
