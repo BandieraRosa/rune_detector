@@ -81,10 +81,10 @@ ament_target_dependencies(test_image_node rclcpp sensor_msgs cv_bridge rm_vision
 target_link_libraries(test_image_node ${OpenCV_LIBS} rm_vision_core::rm_vision_core)
 
 # ==================== 测试: 视频检测追踪 ====================
-# add_executable(test_video_node test/test_video_node.cpp)
-# target_include_directories(test_video_node PRIVATE ${OpenCV_INCLUDE_DIRS})
-# ament_target_dependencies(test_video_node rclcpp sensor_msgs cv_bridge rm_vision_core)
-# target_link_libraries(test_video_node ${OpenCV_LIBS} rm_vision_core::rm_vision_core)
+add_executable(test_video_node test/test_video_node.cpp)
+target_include_directories(test_video_node PRIVATE ${OpenCV_INCLUDE_DIRS})
+ament_target_dependencies(test_video_node rclcpp sensor_msgs cv_bridge rm_vision_core)
+target_link_libraries(test_video_node ${OpenCV_LIBS} rm_vision_core::rm_vision_core)
 
 # ==================== 测试: 模拟 TF 发布 ====================
 add_executable(test_mock_tf_node test/test_mock_tf_node.cpp)
@@ -92,11 +92,11 @@ ament_target_dependencies(test_mock_tf_node
   rclcpp sensor_msgs tf2 tf2_ros geometry_msgs)
 
 # ==================== 测试: 视频帧发布器 ====================
-# add_executable(test_video_publisher_node test/test_video_publisher_node.cpp)
-# target_include_directories(test_video_publisher_node PRIVATE ${OpenCV_INCLUDE_DIRS})
-# ament_target_dependencies(test_video_publisher_node
-#   rclcpp sensor_msgs cv_bridge)
-# target_link_libraries(test_video_publisher_node ${OpenCV_LIBS})
+add_executable(test_video_publisher_node test/test_video_publisher_node.cpp)
+target_include_directories(test_video_publisher_node PRIVATE ${OpenCV_INCLUDE_DIRS})
+ament_target_dependencies(test_video_publisher_node
+  rclcpp sensor_msgs cv_bridge)
+target_link_libraries(test_video_publisher_node ${OpenCV_LIBS})
 
 # ==================== 安装 ====================
 install(TARGETS ${PROJECT_NAME}
@@ -107,9 +107,9 @@ install(TARGETS ${PROJECT_NAME}
 
 install(TARGETS
   test_image_node
-  # test_video_node
+  test_video_node
   test_mock_tf_node
-  # test_video_publisher_node
+  test_video_publisher_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
