@@ -89,7 +89,9 @@ macro(VisCore_add_module MODULE_NAME)
       DESTINATION include
       FILES_MATCHING
       PATTERN "*.h"
-      PATTERN "*.hpp")
+      PATTERN "*.hpp"
+      PATTERN "*.yml"
+      PATTERN "*.yaml")
   endif()
 
   # 记录模块
