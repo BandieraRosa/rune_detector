@@ -7,7 +7,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # ===========================
 # ROS2 依赖查找
 # ===========================
@@ -88,7 +89,9 @@ macro(VisCore_add_module MODULE_NAME)
       DESTINATION include
       FILES_MATCHING
       PATTERN "*.h"
-      PATTERN "*.hpp")
+      PATTERN "*.hpp"
+      PATTERN "*.yml"
+      PATTERN "*.yaml")
   endif()
 
   # 记录模块
